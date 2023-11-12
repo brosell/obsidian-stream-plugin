@@ -13,7 +13,16 @@
 
   function callAdjustTextareaHeight(): void {
     adjustTextareaHeight();
-    markdown.set(textAreaContent);
+    
+  }
+
+  function handleKeyPress(e: KeyboardEvent): void {
+    if (e.key === "Enter" && e.shiftKey) {
+      console.log('keypress', 'submit the chat!!!')
+      markdown.set(textAreaContent);
+      textAreaContent = "";
+      e.preventDefault();
+    }
   }
 
   export function getTextAreaElement(): HTMLTextAreaElement {
@@ -28,4 +37,5 @@
   placeholder="Enter your text..."
   bind:value={textAreaContent}
   on:input={callAdjustTextareaHeight}
+  on:keypress={handleKeyPress}
   style="max-height: 33%;" />
