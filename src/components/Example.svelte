@@ -36,7 +36,7 @@
 <div class="flex h-full">
   <TreeView />
 
-  <div class="flex flex-col w-2/3 min-w-[300px] bg-gray-100">
+  <div class="flex flex-col w-2/3 min-w-[300px] xbg-gray-100">
     <MarkdownView />
     <ChatInput bind:this={chatInputComponent} {textAreaContent} {adjustTextareaHeight} />
   </div>

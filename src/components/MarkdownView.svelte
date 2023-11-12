@@ -1,8 +1,8 @@
 <script lang="ts">
-    import {markdown} from '../stores';
+    import {renderedHtml} from '../stores';
 
 </script>
 
 <div class="flex-1 overflow-auto p-4">
-  {$markdown}
+  {@html $renderedHtml}
 </div>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { markdown } from '../stores';
+  
 
   export let textAreaContent: string;
   export let adjustTextareaHeight: () => void;
@@ -13,7 +14,6 @@
 
   function callAdjustTextareaHeight(): void {
     adjustTextareaHeight();
-    
   }
 
   function handleKeyPress(e: KeyboardEvent): void {
