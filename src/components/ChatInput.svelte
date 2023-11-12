@@ -10,6 +10,16 @@
   onMount(() => {
     adjustTextareaHeight();
   });
+
+  function callAdjustTextareaHeight(): void {
+    adjustTextareaHeight();
+    markdown.set(textAreaContent);
+  }
+
+  export function getTextAreaElement(): HTMLTextAreaElement {
+    return textArea;
+  }
+
 </script>
 
 <textarea
@@ -17,5 +27,5 @@
   class="w-full p-2 border-t border-gray-300 resize-none"
   placeholder="Enter your text..."
   bind:value={textAreaContent}
-  on:input={() => {  markdown.set(textAreaContent); return adjustTextareaHeight(); } }
+  on:input={callAdjustTextareaHeight}
   style="max-height: 33%;" />

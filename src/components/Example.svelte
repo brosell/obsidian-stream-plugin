@@ -5,12 +5,17 @@
   import { onMount } from 'svelte';
 
   let textAreaContent: string = "";
-  let textAreaElement: HTMLTextAreaElement;
+  let chatInputComponent: ChatInput;
 
   function adjustTextareaHeight(): void {
+    const minHeight = 100;
+    const textAreaElement: HTMLTextAreaElement = chatInputComponent.getTextAreaElement();
     const maxHeight: number = window.innerHeight / 3;
-    textAreaElement.style.height = '0px'; // Reset height to recalculate
-    const newHeight: number = Math.min(textAreaElement.scrollHeight, maxHeight);
+    // textAreaElement.style.height = '0px'; // Reset height to recalculate
+    const newHeight: number = Math.max(
+      Math.min(textAreaElement.scrollHeight, maxHeight),
+      minHeight);
+    
     textAreaElement.style.height = `${newHeight}px`;
   }
 
@@ -19,7 +24,8 @@
       adjustTextareaHeight();
     });
 
-    resizeObserver.observe(textAreaElement.parentNode as Element);
+    // Assuming you want to observe changes to the chatInputComponent's parent
+    resizeObserver.observe(chatInputComponent.$$.fragment as unknown as Element);
 
     return () => {
       resizeObserver.disconnect();
@@ -32,7 +38,7 @@
 
   <div class="flex flex-col w-2/3 min-w-[300px] bg-gray-100">
     <MarkdownView />
-    <ChatInput {textAreaContent} {adjustTextareaHeight} />
+    <ChatInput bind:this={chatInputComponent} {textAreaContent} {adjustTextareaHeight} />
   </div>
 </div>
 
