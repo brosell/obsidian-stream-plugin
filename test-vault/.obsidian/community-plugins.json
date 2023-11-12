@@ -1,4 +1,5 @@
 [
+  "hot-reload",
   "obsidian-svelte-plugin",
-  "hot-reload"
+  "obsidian-stream-plugin"
 ]

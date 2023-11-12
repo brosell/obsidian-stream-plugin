@@ -1,5 +1,5 @@
 {
-  "name": "svelted-obsidian",
+  "name": "obsidian-stream-plugin",
   "private": true,
   "version": "1.0.0",
   "main": "main.js",
