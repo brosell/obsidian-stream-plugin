@@ -34,7 +34,7 @@
                     <div class="pl-8">
                         <svelte:self tree_data={item.children} let:item let:list={tree_data} let:id={i}>
                             <slot {item} list={tree_data} id={i}>
-                              <ChatPointCard text={item.name} hasChildren={!!item.children.length} on:expand={toggleExpand} />
+                              <ChatPointCard text={item.name} hasChildren={!!item.children.length}  />
                             </slot>
                         </svelte:self>
                     </div>
