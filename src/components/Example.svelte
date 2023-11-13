@@ -48,13 +48,36 @@
       resizeObserver.disconnect();
     };
   });
+
+  let startX: number;
+  let startWidth: number;
+  let leftPanel: HTMLElement;
+
+  function initResize(event: MouseEvent) {
+    startX = event.clientX;
+    startWidth = leftPanel.offsetWidth;
+    window.addEventListener('mousemove', startResizing);
+    window.addEventListener('mouseup', stopResizing);
+  }
+
+  function startResizing(event: MouseEvent) {
+    const newWidth = startWidth + event.clientX - startX;
+    leftPanel.style.width = `${newWidth}px`;
+  }
+
+  function stopResizing(event: MouseEvent) {
+    window.removeEventListener('mousemove', startResizing);
+    window.removeEventListener('mouseup', stopResizing);
+  }
+  
 </script>
 
 <div class="flex h-full">
-  <div class="w-1/3 xbg-gray-200 p-4 overflow-auto overflow-x-auto">
+  <div bind:this={leftPanel} class=" p-4 overflow-auto" style="width:33%;">
     <TreeView {tree_data}/>
   </div>
-  <div class="flex flex-col w-2/3 min-w-[300px] xbg-gray-100">
+  <div id="resizer" on:mousedown={initResize}></div>
+  <div class="flex flex-col " style="flex-grow:1; min-width:300px;">
     <MarkdownView />
     <ChatInput bind:this={chatInputComponent} {textAreaContent} {adjustTextareaHeight} />
   </div>
@@ -62,7 +85,11 @@
 
 <style>
   /* Additional styles if necessary */
-
+  #resizer {
+    background: #ccc;
+    width: 5px;
+    cursor: ew-resize;
+  }
   /* following allows the ChatInput to stick to the bottom of the View */
   :host {
     display: block;

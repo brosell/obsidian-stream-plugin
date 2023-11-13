@@ -11,7 +11,7 @@
   }
 </script>
 
-
+<div class="nowrap">
   <ul>
     {#each tree_data as item, i}
         <li>
@@ -41,17 +41,19 @@
             {/if}
         </li>
     {/each}
-</ul>
-
+  </ul>
+</div>
 <style>
 	ul {
 		margin: 0;
 		list-style: none;
 		padding-left: 1.2rem; 
 		user-select: none;
-   
 	}
-  
+  .nowrap {
+    white-space: nowrap;
+  }
+
 	.no-arrow { padding-left: 1.0rem; }
 	.arrow {
 		cursor: pointer;
