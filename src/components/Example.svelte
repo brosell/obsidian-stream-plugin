@@ -4,6 +4,22 @@
   import ChatInput from './ChatInput.svelte';
   import { onMount } from 'svelte';
 
+  import { transformToTree, type TreeData } from '../services/nested-list-builder';
+  import {hierarchicalEntries} from '../testdata/tree';
+
+  let tree_data: TreeData = [];
+
+  const trans = hierarchicalEntries.map(i => ({
+      id: i.id,
+      parent: i.parent,
+      name: i.name,
+      children: [] as TreeData
+  } ));    
+    
+    const treeRaw = transformToTree(trans , i => i.parent, i => i.name);
+    tree_data = treeRaw;
+  
+  
   let textAreaContent: string = "";
   let chatInputComponent: ChatInput;
 
@@ -19,6 +35,7 @@
     textAreaElement.style.height = `${newHeight}px`;
   }
 
+  
   onMount(() => {
     const resizeObserver: ResizeObserver = new ResizeObserver(() => {
       adjustTextareaHeight();
@@ -34,8 +51,9 @@
 </script>
 
 <div class="flex h-full">
-  <TreeView />
-
+  <div class="w-1/3 xbg-gray-200 p-4 overflow-auto overflow-x-auto">
+    <TreeView {tree_data}/>
+  </div>
   <div class="flex flex-col w-2/3 min-w-[300px] xbg-gray-100">
     <MarkdownView />
     <ChatInput bind:this={chatInputComponent} {textAreaContent} {adjustTextareaHeight} />

@@ -1,11 +1,21 @@
 type Formatter<T> = (item: T) => string;
 type IdFn<T> = (item: T) => string;
+type TtoString<T> = (item: T) => string;
 
 export interface HierarchicalData {
   id: string;
-  // 'parent' field name will now be dynamic
-  // ... other properties
+  children?: HierarchicalData[]
 }
+
+export interface TreeItem {
+  name: string;
+  children?: TreeItem[];
+
+  // To allow custom keys
+  [key: string]: any;
+}
+
+export type TreeData = TreeItem[];
 
 export class NestedListBuilder<T extends HierarchicalData> {
   private dataMap: Map<string | null, T[]>;
@@ -34,4 +44,28 @@ export class NestedListBuilder<T extends HierarchicalData> {
 
     return listHtml;
   }
+}
+
+
+export function transformToTree<T extends TreeItem>(entries: T[], parentIdFn: TtoString<T>, labelFn: TtoString<T>): TreeData {
+  const map: { [key: string]: TreeItem } = {};
+  const roots: TreeData = [];
+
+  entries.forEach(entry => {
+      map[entry.id] = { ...entry, name: labelFn(entry), children: [] };
+  });
+
+  entries.forEach(entry => {
+    const parentId = parentIdFn(entry);
+      if (parentId === '') {
+          roots.push(map[entry.id]);
+      } else {
+          const parent = map[parentId];
+          if (parent) {
+              parent.children?.push(map[entry.id]);
+          }
+      }
+  });
+
+  return roots;
 }

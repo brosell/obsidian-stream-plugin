@@ -1,61 +1,62 @@
 <script lang="ts">
-    import { NestedListBuilder } from '../services/nested-list-builder';
+  // https://maximmaeder.com/tree-view-with-svelte/
 
-    interface HierarchicalEntry {
-  id: string;
-  parent: string;
-  name: string;
-  desc: string;
-}
+  import type { TreeData } from "../services/nested-list-builder";
+  export let tree_data: TreeData = [];
 
-const hierarchicalEntries: HierarchicalEntry[] = [
-    // Level 1
-    { id: 'id0', parent: '', name: 'Root Level 1', desc: 'Root node description' },
-    
-    // Level 2
-    { id: 'id1', parent: 'id0', name: 'Child Level 2', desc: 'Child node description' },
-    { id: 'id2', parent: 'id0', name: 'Child Level 2', desc: 'Child node description' },
-    
-    // Level 3
-    { id: 'id3', parent: 'id1', name: 'Child Level 3', desc: 'Child node description' },
-    { id: 'id4', parent: 'id1', name: 'Child Level 3', desc: 'Child node description' },
-    { id: 'id5', parent: 'id2', name: 'Child Level 3', desc: 'Child node description' },
-    { id: 'id6', parent: 'id2', name: 'Child Level 3', desc: 'Child node description' },
-    
-    // Level 4
-    { id: 'id7', parent: 'id3', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id8', parent: 'id3', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id9', parent: 'id4', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id10', parent: 'id4', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id11', parent: 'id5', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id12', parent: 'id5', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id13', parent: 'id6', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id14', parent: 'id6', name: 'Child Level 4', desc: 'Child node description' },
-
-    // Repeat the pattern
-    { id: 'id15', parent: 'id0', name: 'Child Level 2', desc: 'Child node description' },
-    { id: 'id16', parent: 'id0', name: 'Child Level 2', desc: 'Child node description' },
-    { id: 'id17', parent: 'id15', name: 'Child Level 3', desc: 'Child node description' },
-    { id: 'id18', parent: 'id15', name: 'Child Level 3', desc: 'Child node description' },
-    { id: 'id19', parent: 'id16', name: 'Child Level 3', desc: 'Child node description' },
-    { id: 'id20', parent: 'id16', name: 'Child Level 3', desc: 'Child node description' },
-    { id: 'id21', parent: 'id17', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id22', parent: 'id17', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id23', parent: 'id18', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id24', parent: 'id18', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id25', parent: 'id19', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id26', parent: 'id19', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id27', parent: 'id20', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id28', parent: 'id20', name: 'Child Level 4', desc: 'Child node description' },
-    { id: 'id29', parent: '', name: 'Root Level 1', desc: 'Root node description' },
-  ];
-
-  const builder = new NestedListBuilder(hierarchicalEntries, (i) => i.parent);
-  let myList = builder.buildList('id0', (i) => `p: ${i.parent} id: ${i.id}`);
-
+  function summaryKeyup(event: KeyboardEvent) {
+      if (event.key ==  ' ' && document.activeElement!.tagName != 'SUMMARY') {
+          event.preventDefault();
+      }
+  }
 </script>
 
-<div class="w-1/3 bg-gray-200 p-4 overflow-auto">
-  <!-- Tree view content goes here -->
-  {@html myList}
-</div>
+
+  <ul>
+    {#each tree_data as item, i}
+        <li>
+            {#if item.children?.length}
+              <details>
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <summary class="flex" on:keyup={summaryKeyup} >
+                    <slot {item} list={tree_data} id={i}>
+                      <span class="arrow" >&#x25b6</span>{item.name}
+                    </slot>
+                </summary>
+            
+                {#if item.children?.length}
+                    <div class="pl-8">
+                        <svelte:self tree_data={item.children} let:item let:list={tree_data} let:id={i}>
+                            <slot {item} list={tree_data} id={i}>
+                              <span class="arrow" >&#x25b6</span>{ item.name }
+                            </slot>
+                        </svelte:self>
+                    </div>
+                {/if}
+              </details>
+            {:else}
+                <slot {item} list={tree_data} id={i}>
+                  <span class="no-arrow">{item.name}</span>
+                </slot>
+            {/if}
+        </li>
+    {/each}
+</ul>
+
+<style>
+	ul {
+		margin: 0;
+		list-style: none;
+		padding-left: 1.2rem; 
+		user-select: none;
+   
+	}
+  
+	.no-arrow { padding-left: 1.0rem; }
+	.arrow {
+		cursor: pointer;
+		display: inline-block;
+		/* transition: transform 200ms; */
+	}
+	.arrowDown { transform: rotate(90deg); }
+</style>
