@@ -2,6 +2,7 @@
   // https://maximmaeder.com/tree-view-with-svelte/
 
   import type { TreeData } from "../services/nested-list-builder";
+  import ChatPointCard from "./ChatPointCard.svelte";
   export let tree_data: TreeData = [];
 
   function summaryKeyup(event: KeyboardEvent) {
@@ -9,26 +10,31 @@
           event.preventDefault();
       }
   }
+
+  function toggleExpand(e: any) {
+    console.log('toggle expand', e);
+    tree_data = [...tree_data, ({ name: 'hodor', children: []})];
+  }
 </script>
 
-<div class="nowrap">
+<div class="xnowrap">
   <ul>
     {#each tree_data as item, i}
         <li>
-            {#if item.children?.length}
+            {#if item.children}
               <details>
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <summary class="flex" on:keyup={summaryKeyup} >
                     <slot {item} list={tree_data} id={i}>
-                      <span class="arrow" >&#x25b6</span>{item.name}
+                      <ChatPointCard text={item.name} hasChildren={!!item.children.length} on:expand={toggleExpand} />
                     </slot>
                 </summary>
             
-                {#if item.children?.length}
+                {#if item.children}
                     <div class="pl-8">
                         <svelte:self tree_data={item.children} let:item let:list={tree_data} let:id={i}>
                             <slot {item} list={tree_data} id={i}>
-                              <span class="arrow" >&#x25b6</span>{ item.name }
+                              <ChatPointCard text={item.name} hasChildren={!!item.children.length} on:expand={toggleExpand} />
                             </slot>
                         </svelte:self>
                     </div>
@@ -36,7 +42,7 @@
               </details>
             {:else}
                 <slot {item} list={tree_data} id={i}>
-                  <span class="no-arrow">{item.name}</span>
+                  {item.name}
                 </slot>
             {/if}
         </li>

@@ -7,7 +7,7 @@ interface HierarchicalEntry {
 
 export const hierarchicalEntries: HierarchicalEntry[] = [
   // Level 1
-  { id: 'id0', parent: '', name: 'Root Level 1', desc: 'Root node description' },
+  { id: 'id0', parent: '', desc: '', name: 'Root node description Root node description Root node description Root node description Root node description Root node description Root node description Root node description Root node description Root node description Root node description Root node description Root node description Root node description ' },
   
   // Level 2
   { id: 'id1', parent: 'id0', name: 'Child Level 2 a', desc: 'Child node description' },
