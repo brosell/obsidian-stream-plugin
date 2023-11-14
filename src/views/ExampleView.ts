@@ -22,6 +22,8 @@ export class ExampleView extends ItemView {
 	}
 
 	async onClose() {
-		this.component.$destroy();
+		if (this?.component?.$destroy) {
+			this.component.$destroy();
+		}
 	}
 }

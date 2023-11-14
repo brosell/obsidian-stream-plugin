@@ -41,9 +41,6 @@
       adjustTextareaHeight();
     });
 
-    // Assuming you want to observe changes to the chatInputComponent's parent
-    resizeObserver.observe(chatInputComponent.$$.fragment as unknown as Element);
-
     return () => {
       resizeObserver.disconnect();
     };
@@ -63,6 +60,7 @@
   function startResizing(event: MouseEvent) {
     const newWidth = startWidth + event.clientX - startX;
     leftPanel.style.width = `${newWidth}px`;
+    leftPanel.style.minWidth = `${newWidth}px`;
   }
 
   function stopResizing(event: MouseEvent) {
@@ -77,7 +75,7 @@
     <TreeView {tree_data}/>
   </div>
   <div id="resizer" on:mousedown={initResize}></div>
-  <div class="flex flex-col " style="flex-grow:1; min-width:300px;">
+  <div class="flex flex-col p-4" style="flex-grow:1; min-width:300px;">
     <MarkdownView />
     <ChatInput bind:this={chatInputComponent} {textAreaContent} {adjustTextareaHeight} />
   </div>
@@ -88,6 +86,7 @@
   #resizer {
     background: #ccc;
     width: 5px;
+    min-width: 5px;
     cursor: ew-resize;
   }
   /* following allows the ChatInput to stick to the bottom of the View */
