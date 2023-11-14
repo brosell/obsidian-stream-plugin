@@ -71,9 +71,10 @@
 </script>
 
 <div class="flex h-full">
-  <div bind:this={leftPanel} class=" p-4 overflow-auto" style="width:33%;">
+  <div bind:this={leftPanel} class=" p-4 overflow-auto" style="width:50%;">
     <TreeView {tree_data}/>
   </div>
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div id="resizer" on:mousedown={initResize}></div>
   <div class="flex flex-col p-4" style="flex-grow:1; min-width:300px;">
     <MarkdownView />
