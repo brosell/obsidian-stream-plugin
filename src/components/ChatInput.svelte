@@ -19,7 +19,7 @@
   function handleKeyPress(e: KeyboardEvent): void {
     if (e.key === "Enter" && e.shiftKey) {
       console.log('keypress', 'submit the chat!!!')
-      markdown.set(textAreaContent);
+      // markdown.set(textAreaContent);
       textAreaContent = "";
       e.preventDefault();
     }
