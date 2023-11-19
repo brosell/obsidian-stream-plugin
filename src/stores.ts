@@ -1,8 +1,14 @@
 import { writable, derived } from "svelte/store";
 import {marked} from 'marked';
 
+enum ChatRole {
+  SYSTEM = 'SYSTEM',
+  USER = 'USER',
+  ASSISTANT = 'ASSISTANT'
+}
+
 interface Completion {
-  role: 'SYSTEM' | 'USER' | 'ASSISTANT';
+  role: ChatRole;
   content: string;
 }
 
@@ -20,15 +26,15 @@ class ChatPoint {
       throw new Error(`Cannot add User prompt because current Completion Roles [${this.completions.map(c => c.role)}] already exists`);
     }
 
-    this.completions.push({ role: 'USER', content } );
+    this.completions.push({ role: ChatRole.USER, content } );
   }
 
   setAssistantResponse(content: string) {
-    if (this.completions[0]?.role !== 'USER') {
+    if (this.completions[0]?.role !== ChatRole.USER) {
       throw new Error(`Cannot add Assistant response for current Completion Roles of [${this.completions.map(c => c.role)}]`)
     }
 
-    this.completions.push({ role: 'SYSTEM', content } );
+    this.completions.push({ role: ChatRole.SYSTEM, content } );
   }
 }
 
@@ -45,7 +51,7 @@ ${JSON.stringify(t, null, 2)}
 export const renderedHtml = derived(markdown, markdown => marked(markdown));
 
 // bootstrap
-const rootCP = new ChatPoint(undefined, [{ role: 'SYSTEM', content: 'You are a helpful assistant' } ]);
+const rootCP = new ChatPoint(undefined, [{ role: ChatRole.SYSTEM, content: 'You are a helpful assistant' } ]);
 
 chatPoints.push(rootCP);
 
