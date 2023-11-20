@@ -29,3 +29,4 @@ test-vault/.obsidian/plugins/obsidian-svelte-plugin/*.json
 *.njsproj
 *.sln
 *.sw?
+src/openai_key.ts
