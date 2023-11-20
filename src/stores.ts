@@ -1,3 +1,5 @@
+import { } from './services/debug-utils'
+
 import { writable, derived, get, readable } from "svelte/store";
 import {marked} from 'marked';
 
@@ -10,6 +12,7 @@ const ai = new AiInterface(10);
 const chatPoints: ChatPoint[] = [];
 
 export const activeChatPointId = writable('');
+
 
 const deriveThread = (leafId: string): ChatPoint[] => {
   const answer = [] as ChatPoint[];
@@ -44,10 +47,12 @@ ${JSON.stringify(t.flatMap(c => c.getCompletions()), null, 2)}
 
 export const markdown = derived(activeChatThread, t => {
   const rfi = get(readyForInput);
-  const md = t.flatMap(c => c.getCompletions())
-          .map(c => `**${c.role}**: ${c.content}\n`)
-          .join('\n');
-  return `${md}\n ${!rfi?'waiting for response...':''}`;
+
+  const md = t.map(item => {
+    const completionsMarkdown = item.getCompletions().map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
+    return `### ${item.id}\n${completionsMarkdown}`;
+  }).join('\n\n');
+  return `${md}\n ${!rfi?'==waiting for response...==':''}`;
 }); 
 
 export const renderedHtml = derived(markdown, markdown => marked(markdown));
