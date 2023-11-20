@@ -1,4 +1,4 @@
-./src/openai_key.ts
+src/oai-api-key.ts
 
 
 # Logs

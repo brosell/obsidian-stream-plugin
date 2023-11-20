@@ -1,13 +1,13 @@
-import { activeChatPointId } from "../stores";
+import type { ChatPoint } from "../models/chat-point";
+import { activeChatPoint, activeChatPointId, readyForInput } from "../stores";
 
-export class ChatService {
-  constructor() {
-    activeChatPointId.subscribe((id) => { this.onActiveChatPointIdChanged(id); })
-  }
+// setTimeout(() => activeChatPoint.subscribe((cp) => { if (cp) onActiveChatPointIdChanged(cp); }), 1);
 
-  onActiveChatPointIdChanged(id: string) {
-    /* if the current CP doesn't have an AI response then
-        get one!
-    */
-  }
+export function onActiveChatPointIdChanged(cp: ChatPoint) {
+  console.log('get ai response');
+  // setTimeout(() => {
+  //     cp.setAssistantResponse(`echo: ${cp.getCompletions().USER}`); 
+  //     activeChatPointId.set(''); activeChatPointId.set(cp.id);
+  //     readyForInput.set(true);
+  //   }, 2000);
 }

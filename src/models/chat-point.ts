@@ -3,7 +3,7 @@ export enum ChatRole {
   USER = 'USER',
   ASSISTANT = 'ASSISTANT'
 }
-interface Completion {
+export interface Completion {
   role: ChatRole;
   content: string;
 }
@@ -32,10 +32,9 @@ export class ChatPoint {
   }
 
   getCompletions() {
-    const answer: any = {};
-    this.completions.forEach(c => {
-      answer[c.role] = c.content;
-    });
-    return answer;
+    return this.completions.map(c => ({
+      role: c.role.toLowerCase(),
+      content: c.content
+    }));
   }
 }

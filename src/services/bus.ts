@@ -2,6 +2,8 @@ import { writable, type Readable, type Invalidator, type Subscriber, type Unsubs
 
 export enum BusEvent {
   ChatIntent = 'ChatIntent',
+  UserPromptAvailable = 'UserPromptReady',
+  AIResponseAvailable = 'AIResponseReady'
 }
 
 export interface Message {

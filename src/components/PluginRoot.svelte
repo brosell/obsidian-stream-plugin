@@ -27,7 +27,6 @@
     const minHeight = 100;
     const textAreaElement: HTMLTextAreaElement = chatInputComponent.getTextAreaElement();
     const maxHeight: number = window.innerHeight / 3;
-    // textAreaElement.style.height = '0px'; // Reset height to recalculate
     const newHeight: number = Math.max(
       Math.min(textAreaElement.scrollHeight, maxHeight),
       minHeight);

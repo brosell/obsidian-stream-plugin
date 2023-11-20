@@ -1,8 +1,11 @@
 import { writable, derived, get, readable } from "svelte/store";
 import {marked} from 'marked';
 
-import { bus } from "./services/bus";
-import { ChatPoint, ChatRole } from "./models/chat-point";
+import { BusEvent, bus } from "./services/bus";
+import { ChatPoint, ChatRole, type Completion } from "./models/chat-point";
+import { AiInterface } from "./services/ai"
+
+const ai = new AiInterface(10);
 
 const chatPoints: ChatPoint[] = [];
 
@@ -34,34 +37,49 @@ const deriveThread = (leafId: string): ChatPoint[] => {
 export const activeChatThread = derived(activeChatPointId, deriveThread);
 export const activeChatPoint = derived(activeChatPointId, id => chatPoints.find(cp => cp.id === id));
 
-// export const markdown = derived(activeChatThread, t => '# Hello');
-
-export const markdown = derived(activeChatThread, t => `\`\`\`
-${JSON.stringify(t.map(c => c.getCompletions()), null, 2)}
+export const jsonMarkdown = derived(activeChatThread, t => `\`\`\`
+${JSON.stringify(t.flatMap(c => c.getCompletions()), null, 2)}
 \`\`\`
 `);
 
+export const markdown = derived(activeChatThread, t => {
+  const rfi = get(readyForInput);
+  const md = t.flatMap(c => c.getCompletions())
+          .map(c => `**${c.role}**: ${c.content}\n`)
+          .join('\n');
+  return `${md}\n ${!rfi?'waiting for response...':''}`;
+}); 
+
 export const renderedHtml = derived(markdown, markdown => marked(markdown));
 
-const addChild = (content: string) => {
+const createChatPoint = (content: string) => {
   const current = get(activeChatPoint);
   const previousId = current?.id ?? undefined;
 
   const child = new ChatPoint(previousId, [ { role: ChatRole.USER, content } ]);
   chatPoints.push(child);
   activeChatPointId.set(child.id);
-  
-  setTimeout(() => {
-    child.setAssistantResponse(`echo: ${content}`); 
-    activeChatPointId.set(''); activeChatPointId.set(child.id);
-    readyForInput.set(true);
-  }, 2000);
+  return child;
 }
 
 const commands: Record<string, (m: Record<string, any>) => void> = {
-  'ChatIntent': (details) => {
+  [BusEvent.ChatIntent]: (details) => {
     readyForInput.set(false);
-    addChild(details.content)
+    createChatPoint(details.content);
+    bus.set({ event: BusEvent.UserPromptAvailable, details: { } });
+  },
+  [BusEvent.UserPromptAvailable]: (details) => {
+    const thread = get(activeChatThread);
+    const completions = thread.flatMap(cp => cp.getCompletions()) as Completion[];
+    // console.log(completions);
+    ai.prompt(completions);
+  },
+  [BusEvent.AIResponseAvailable]: (details) => {
+    const cp = get(activeChatPoint);
+    cp!.setAssistantResponse(details.content)
+    readyForInput.set(true);
+    activeChatPointId.set('');
+    activeChatPointId.set(cp!.id);
   }
 }
 
