@@ -1,4 +1,4 @@
-import { writable, derived, get } from "svelte/store";
+import { writable, derived, get, readable } from "svelte/store";
 import {marked} from 'marked';
 
 import { bus } from "./services/bus";
@@ -36,7 +36,6 @@ export const activeChatPoint = derived(activeChatPointId, id => chatPoints.find(
 
 // export const markdown = derived(activeChatThread, t => '# Hello');
 
-
 export const markdown = derived(activeChatThread, t => `\`\`\`
 ${JSON.stringify(t.map(c => c.getCompletions()), null, 2)}
 \`\`\`
@@ -52,11 +51,16 @@ const addChild = (content: string) => {
   chatPoints.push(child);
   activeChatPointId.set(child.id);
   
-  setTimeout(() => {child.setAssistantResponse(`echo: ${content}`); activeChatPointId.set(''); activeChatPointId.set(child.id);}, 100);
+  setTimeout(() => {
+    child.setAssistantResponse(`echo: ${content}`); 
+    activeChatPointId.set(''); activeChatPointId.set(child.id);
+    readyForInput.set(true);
+  }, 2000);
 }
 
 const commands: Record<string, (m: Record<string, any>) => void> = {
   'ChatIntent': (details) => {
+    readyForInput.set(false);
     addChild(details.content)
   }
 }
@@ -67,7 +71,7 @@ bus.subscribe(message => {
   }
 })
 
-
+export const readyForInput = writable(true);
 
 // test stuff
 const rootCP = new ChatPoint(undefined, [{ role: ChatRole.SYSTEM, content: 'You are a helpful assistant' } ]);
