@@ -1,12 +1,12 @@
 import { writable } from "svelte/store";
 
-enum Event {
+export enum BusEvent {
   AddToChat = 'ChatIntent',
 }
 
-interface Message {
-  event: Event,
-  content: Record<string, any>
+export interface Message {
+  event: BusEvent,
+  details: Record<string, any>
 }
 
 export const bus = writable<Message>();
