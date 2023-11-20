@@ -52,7 +52,7 @@ export const markdown = derived(activeChatThread, t => {
     const completionsMarkdown = item.getCompletions().map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
     return `### ${item.id}\n${completionsMarkdown}`;
   }).join('\n\n');
-  return `${md}\n ${!rfi?'==waiting for response...==':''}`;
+  return `${md}\n\n---\n ${!rfi?'==waiting for response...==':''}`;
 }); 
 
 export const renderedHtml = derived(markdown, markdown => marked(markdown));

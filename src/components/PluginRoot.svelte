@@ -34,8 +34,11 @@
     textAreaElement.style.height = `${newHeight}px`;
   }
 
+  let rightDiv: any;
+  let rightDivInitialWidth: string;
   
   onMount(() => {
+    rightDivInitialWidth = `${rightDiv.offsetWidth}px`;
     const resizeObserver: ResizeObserver = new ResizeObserver(() => {
       adjustTextareaHeight();
     });
@@ -75,7 +78,7 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div id="resizer" on:mousedown={initResize}></div>
-  <div class="flex flex-col p-4" style="flex-grow:1; min-width:300px;">
+  <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
     <MarkdownView />
     <ChatInput bind:this={chatInputComponent} {textAreaContent} {adjustTextareaHeight} />
   </div>
