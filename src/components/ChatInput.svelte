@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { markdown } from '../stores';
-  
+  import { BusEvent, bus } from '../services/bus';
 
   export let textAreaContent: string;
   export let adjustTextareaHeight: () => void;
@@ -19,7 +18,9 @@
   function handleKeyPress(e: KeyboardEvent): void {
     if (e.key === "Enter" && e.shiftKey) {
       console.log('keypress', 'submit the chat!!!')
-      // markdown.set(textAreaContent);
+
+      bus.set( { event: BusEvent.ChatIntent, details: { content: textAreaContent }});
+
       textAreaContent = "";
       e.preventDefault();
     }

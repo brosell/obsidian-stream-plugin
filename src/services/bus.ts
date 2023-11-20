@@ -1,7 +1,7 @@
-import { writable } from "svelte/store";
+import { writable, type Readable, type Invalidator, type Subscriber, type Unsubscriber, type Writable } from "svelte/store";
 
 export enum BusEvent {
-  AddToChat = 'ChatIntent',
+  ChatIntent = 'ChatIntent',
 }
 
 export interface Message {
@@ -10,4 +10,5 @@ export interface Message {
 }
 
 export const bus = writable<Message>();
-bus.subscribe( message => console.log(message) ); // just a logger
+
+bus.subscribe(message => console.log("Bus Event:", message) ); // just a logger

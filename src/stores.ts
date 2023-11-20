@@ -72,6 +72,17 @@ ${JSON.stringify(t, null, 2)}
 
 export const renderedHtml = derived(markdown, markdown => marked(markdown));
 
+const addChild = (content: string) => {
+  const current = get(activeChatPoint);
+  const previousId = current?.id ?? undefined;
+
+  const child = new ChatPoint(previousId, [ { role: ChatRole.USER, content } ]);
+  chatPoints.push(child);
+  activeChatPointId.set(child.id);
+  
+  setTimeout(() => {child.setAssistantResponse(`echo: ${content}`); activeChatPointId.set(child.id);}, 500);
+}
+
 const commands: Record<string, (m: Record<string, any>) => void> = {
   'ChatIntent': (details) => {
     addChild(details.content)
@@ -79,7 +90,6 @@ const commands: Record<string, (m: Record<string, any>) => void> = {
 }
 
 bus.subscribe(message => {
-  
   if (message && commands[message.event]) {
     commands[message.event](message.details);
   }
@@ -94,14 +104,5 @@ chatPoints.push(rootCP);
 
 activeChatPointId.set(rootCP.id);
 
-const addChild = (content: string) => {
-  const current = get(activeChatPoint);
-  if (!current) {
-    return;
-  }
-  const child = new ChatPoint(current.id, [ { role: ChatRole.USER, content } ]);
-  chatPoints.push(child);
-  activeChatPointId.set(child.id);
-}
+// setTimeout(() => {bus.set({ event: BusEvent.AddToChat, details: { content: `what what ${g_id++}` }}); bus.set({ event: BusEvent.AddToChat, details: { content: `what what ${g_id++}` }})}, 2000);
 
-// setInterval(() => bus.set({ event: BusEvent.AddToChat, details: { content: `what what ${g_id++}` }}), 2000);
