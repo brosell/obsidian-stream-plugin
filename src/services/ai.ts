@@ -16,7 +16,7 @@ export class AiInterface {
   private _count: number = 0;
   get count() { return this._count; }
 
-  async prompt(completions: Completion[]): Promise<string> {
+  async prompt(completions: Completion[], context: any): Promise<string> {
     if (this.count > this.safetyNet) {
       throw "out of calls";
     }
@@ -31,7 +31,7 @@ export class AiInterface {
       );
       
       const content = chatCompletion?.choices[0]?.message.content ?? 'FALSE -m';
-      bus.set({event: BusEvent.AIResponseAvailable, details: { content }});
+      bus.set({event: BusEvent.AIResponseAvailable, details: { context, content }});
       return content;
     } catch (error) {
       return `FALSE -${error}`;

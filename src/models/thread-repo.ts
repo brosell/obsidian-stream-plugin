@@ -1,18 +1,27 @@
 import { get } from "svelte/store";
 import { activeChatPoint, activeChatPointId, chat } from "../stores/stores";
-import { ChatPoint, ChatRole } from "./chat-point";
+import { type ChatPoint, ChatRole } from "./chat-point";
 
-export const chatPoints: ChatPoint[] = [];
+export let chatPoints: ChatPoint[] = [];
 
-export const createChatPoint = (content: string ) => {
-  const current = get(activeChatPoint);
-  const previousId = current?.id ?? '';
+let g_id = 0;
 
-  const child = new ChatPoint(previousId, [ { role: ChatRole.USER, content } ]);
+export const addNewChatPoint = (content: string, previousId: string = '') => {
+  const child: ChatPoint = { id: `${g_id++}`, previousId, completions: [{ role: ChatRole.USER, content }]};
   chatPoints.push(child);
-  activeChatPointId.set(child.id);
-  chat.set([]); chat.set(chatPoints);
   return child;
+}
+
+export const updateChatPoint = (chatPointId: string, updater:(chatPoint: ChatPoint) => ChatPoint): ChatPoint => {
+  const index = chatPoints.findIndex(cp => cp.id === chatPointId);
+  if (index === -1) {
+    throw new Error('tried to update nonexistent ChatPoint');
+  }
+  const chatPoint = chatPoints[index];
+
+  const updated = updater({...chatPoint});
+  chatPoints = [...chatPoints.slice(0, index), updated, ...chatPoints.slice(index + 1)]
+  return updated;
 }
 
 export const deriveThread = (leafId: string): ChatPoint[] => {

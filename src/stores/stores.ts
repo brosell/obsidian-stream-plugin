@@ -1,8 +1,8 @@
 import { } from '../services/debug-utils'
 import { } from './commands'
 import { writable, derived, readable } from "svelte/store";
-import { ChatPoint, ChatRole } from "../models/chat-point";
-import { chatPoints, createChatPoint, deriveThread } from '../models/thread-repo';
+import { type ChatPoint, ChatRole } from "../models/chat-point";
+import { chatPoints, addNewChatPoint, deriveThread } from '../models/thread-repo';
 import { buildHierarchy } from '../services/nested-list-builder';
 
 export const activeChatPointId = writable('');
@@ -18,7 +18,7 @@ export const tree = derived(chat, (chat) =>
 )
 
 // test stuff
-const rootCP = new ChatPoint('', [{ role: ChatRole.SYSTEM, content: 'You are a hateful assistant' } ]);
+const rootCP: ChatPoint = {previousId: '', id: 'a', completions: [{ role: ChatRole.SYSTEM, content: 'Your name is Gollum and you are a helpful assistant for telling riddles' } ]};
 
 chatPoints.push(rootCP);
 chat.set(chatPoints);
