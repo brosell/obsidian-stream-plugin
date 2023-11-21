@@ -1,5 +1,5 @@
 import type { ChatPoint } from "../models/chat-point";
-import { activeChatPoint, activeChatPointId, readyForInput } from "../stores";
+import { activeChatPoint, activeChatPointId, readyForInput } from "../stores/stores";
 
 // setTimeout(() => activeChatPoint.subscribe((cp) => { if (cp) onActiveChatPointIdChanged(cp); }), 1);
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { BusEvent, bus } from '../services/bus';
-  import { readyForInput } from '../stores';
+  import { readyForInput } from '../stores/stores';
 
   export let textAreaContent: string;
   export let adjustTextareaHeight: () => void;
