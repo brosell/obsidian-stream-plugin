@@ -13,7 +13,7 @@ export const activeChatPoint = derived(activeChatPointId, id => get(chatPoints).
 export const readyForInput = writable(true);
 
 export const chat = chatPoints; // todo redundant and confusing
-export const tree = derived(chat, (chat) => 
+export const tree = derived(chatPoints, (chat) => 
   buildHierarchy(chat)
 )
 

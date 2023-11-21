@@ -1,5 +1,4 @@
 import { get, writable } from "svelte/store";
-import { activeChatPoint, activeChatPointId, chat } from "../stores/stores";
 import { type ChatPoint, ChatRole } from "./chat-point";
 
 // export let chatPoints: ChatPoint[] = [];
