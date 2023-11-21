@@ -1,8 +1,8 @@
 import { get } from "svelte/store";
 import { BusEvent, bus } from "../services/bus";
 import { ChatRole, type Completion } from "../models/chat-point";
-import { chatPoints, addNewChatPoint, deriveThread } from '../models/thread-repo';
-import { readyForInput, activeChatThread, activeChatPoint, activeChatPointId, chat } from './stores';
+import { addNewChatPoint, deriveThread, updateChatPoint } from '../models/thread-repo';
+import { readyForInput, activeChatPointId } from './stores';
 import { AiInterface } from "../services/ai";
 
 const ai = new AiInterface(10);
@@ -10,7 +10,7 @@ const ai = new AiInterface(10);
 const commands: Record<string, (m: Record<string, any>) => void> = {
   [BusEvent.ChatIntent]: (details) => {
     readyForInput.set(false);
-    const cp = addNewChatPoint(details.content);
+    const cp = addNewChatPoint(details.content, get(activeChatPointId));
     activeChatPointId.set(cp.id);
     bus.set({ event: BusEvent.UserPromptAvailable, details: { context: cp.id, content: details.content} });
   },
@@ -23,14 +23,16 @@ const commands: Record<string, (m: Record<string, any>) => void> = {
   [BusEvent.AIResponseAvailable]: (details) => {
     const {context, content} = details;
 
-    const cp = chatPoints.find(cp => cp.id == context);
-    cp?.completions.push( { role: ChatRole.ASSISTANT, content });
+    const cp = updateChatPoint(context, cp => {
+      return {...cp, completions: [...cp.completions, { role: ChatRole.ASSISTANT, content }]}
+    });
+
     readyForInput.set(true);
     // activeChatPointId.update(currentId => currentId);
     activeChatPointId.set('');
     activeChatPointId.set(cp!.id);
 
-    chat.set([]); chat.set(chatPoints);
+    // chat.set([]); chat.set(chatPoints);
   }
 };
 

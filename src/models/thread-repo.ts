@@ -1,27 +1,31 @@
-import { get } from "svelte/store";
+import { get, writable } from "svelte/store";
 import { activeChatPoint, activeChatPointId, chat } from "../stores/stores";
 import { type ChatPoint, ChatRole } from "./chat-point";
 
-export let chatPoints: ChatPoint[] = [];
+// export let chatPoints: ChatPoint[] = [];
+export const chatPoints = writable([] as ChatPoint[]);
 
 let g_id = 0;
 
 export const addNewChatPoint = (content: string, previousId: string = '') => {
   const child: ChatPoint = { id: `${g_id++}`, previousId, completions: [{ role: ChatRole.USER, content }]};
-  chatPoints.push(child);
+  chatPoints.update(arr => [...arr, child ]);
   return child;
 }
 
 export const updateChatPoint = (chatPointId: string, updater:(chatPoint: ChatPoint) => ChatPoint): ChatPoint => {
-  const index = chatPoints.findIndex(cp => cp.id === chatPointId);
-  if (index === -1) {
-    throw new Error('tried to update nonexistent ChatPoint');
-  }
-  const chatPoint = chatPoints[index];
+  let updated: ChatPoint;
+  chatPoints.update(arr => {
+    const index = arr.findIndex(cp => cp.id === chatPointId);
+    if (index === -1) {
+      throw new Error('tried to update nonexistent ChatPoint');
+    }
+    const chatPoint = arr[index];
 
-  const updated = updater({...chatPoint});
-  chatPoints = [...chatPoints.slice(0, index), updated, ...chatPoints.slice(index + 1)]
-  return updated;
+    updated = updater({...chatPoint});
+    return [...arr.slice(0, index), updated, ...arr.slice(index + 1)]
+  });
+  return updated!
 }
 
 export const deriveThread = (leafId: string): ChatPoint[] => {
@@ -30,19 +34,21 @@ export const deriveThread = (leafId: string): ChatPoint[] => {
     return answer;
   }
 
-  let node=chatPoints.find(cp => cp.id === leafId);
+  const arr = get(chatPoints);
+  let node=arr.find(cp => cp.id === leafId);
   if (!node) {
     throw new Error(`tried to create a thread for nonexisting leaf ${leafId}`)
   }
 
   answer.unshift(node);
   while (node.previousId) {
-    node = chatPoints.find(cp => cp.id === node?.previousId);
+    node = arr.find(cp => cp.id === node?.previousId);
     if (!node) {
       throw new Error(`tried to create thread but the linkage is broken ${leafId}`);
     }
     answer.unshift(node);
   }
-
+  console.log('chats:', arr)
+  console.log('thread:', answer)
   return answer;
 }

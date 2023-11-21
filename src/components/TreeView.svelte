@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { ItemView } from "obsidian";
   import type { HierarchyItem } from "../services/nested-list-builder";
-  import { chat, tree } from "../stores/stores";
+  import { tree } from "../stores/stores";
 
   // https://maximmaeder.com/tree-view-with-svelte/
 
-  import ChatPointCard from "./ChatPointCard.svelte";
-  import { chatPointToHtml, chatPointToMarkdown } from "../stores/render-markdown";
+  import { chatPointToHtml } from "../stores/render-markdown";
+  import { chatPoints } from "../models/thread-repo";
   export let tree_data: HierarchyItem[] = $tree;
 
   function summaryKeyup(event: KeyboardEvent) {
@@ -25,7 +24,7 @@
 
 <div class="xnowrap">
   <ul>
-{#each $chat as item}
+{#each $chatPoints as item}
   <li>{@html chatPointToHtml(item)}</li>
 {/each}
 </ul>
