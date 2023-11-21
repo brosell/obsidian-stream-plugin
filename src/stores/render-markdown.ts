@@ -14,6 +14,10 @@ export const chatPointToMarkdown = (item: ChatPoint) => {
   return `### ${item.id}\n${completionsMarkdown}`;
 }
 
+export const chatPointToHtml = (item: ChatPoint) => {
+  return marked(chatPointToMarkdown(item));
+}
+
 export const markdown = derived(activeChatThread, t => {
   const rfi = get(readyForInput);
 

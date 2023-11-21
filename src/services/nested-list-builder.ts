@@ -1,71 +1,39 @@
 type Formatter<T> = (item: T) => string;
 type IdFn<T> = (item: T) => string;
 type TtoString<T> = (item: T) => string;
-
-export interface HierarchicalData {
+export interface Item {
   id: string;
-  children?: HierarchicalData[]
-}
-
-export interface TreeItem {
-  name: string;
-  children?: TreeItem[];
-
-  // To allow custom keys
+  previousId: string;
   [key: string]: any;
 }
 
-export type TreeData = TreeItem[];
-
-export class NestedListBuilder<T extends HierarchicalData> {
-  private dataMap: Map<string | null, T[]>;
-
-  constructor(data: T[], idFn: IdFn<T>) {
-
-    this.dataMap = new Map<string | null, T[]>();
-    data.forEach(item => {
-      const parentId = idFn(item);
-      if (!this.dataMap.has(parentId)) {
-        this.dataMap.set(parentId, []);
-      }
-      this.dataMap.get(parentId)?.push(item);
-    });
-  }
-
-  buildList(parentId: string | null, formatter: Formatter<T>): string {
-    const children = this.dataMap.get(parentId) || [];
-    if (children.length === 0) return '';
-
-    let listHtml = `<ul>`;
-    children.forEach(child => {
-      listHtml += `<li>${formatter(child)}${this.buildList(child.id, formatter)}</li>`;
-    });
-    listHtml += `</ul>`;
-
-    return listHtml;
-  }
+export interface HierarchyItem extends Omit<Item, 'previousId'> {
+  children: HierarchyItem[];
 }
 
+export function buildHierarchy(items: Item[]): HierarchyItem[] {
+  const itemsMap = new Map<string, HierarchyItem>();
+  const rootItems: HierarchyItem[] = [];
 
-export function transformToTree<T extends TreeItem>(entries: T[], parentIdFn: TtoString<T>, labelFn: TtoString<T>): TreeData {
-  const map: { [key: string]: TreeItem } = {};
-  const roots: TreeData = [];
-
-  entries.forEach(entry => {
-      map[entry.id] = { ...entry, name: labelFn(entry), children: [] };
+  // Initialize items map with items without children
+  items.forEach(item => {
+    itemsMap.set(item.id, { ...item, children: [] });
   });
 
-  entries.forEach(entry => {
-    const parentId = parentIdFn(entry);
-      if (parentId === '') {
-          roots.push(map[entry.id]);
+  // Build hierarchy
+  items.forEach(item => {
+    const currentItem = itemsMap.get(item.id);
+    if (currentItem) {
+      if (item.previousId === null || item.previousId === '') {
+        rootItems.push(currentItem);
       } else {
-          const parent = map[parentId];
-          if (parent) {
-              parent.children?.push(map[entry.id]);
-          }
+        const parentItem = itemsMap.get(item.previousId);
+        if (parentItem) {
+          parentItem.children.push(currentItem);
+        }
       }
+    }
   });
 
-  return roots;
+  return rootItems;
 }

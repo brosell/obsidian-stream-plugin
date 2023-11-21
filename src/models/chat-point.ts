@@ -11,7 +11,7 @@ let g_id = 0;
 export class ChatPoint {
   id: string;
 
-  constructor(public previousId?: string, private completions: Completion[] = []) {
+  constructor(public previousId: string, private completions: Completion[] = []) {
     this.id = (g_id++).toString();
   }
 

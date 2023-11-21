@@ -1,9 +1,13 @@
 <script lang="ts">
+  import { ItemView } from "obsidian";
+  import type { HierarchyItem } from "../services/nested-list-builder";
+  import { chat, tree } from "../stores/stores";
+
   // https://maximmaeder.com/tree-view-with-svelte/
 
-  import type { TreeData } from "../services/nested-list-builder";
   import ChatPointCard from "./ChatPointCard.svelte";
-  export let tree_data: TreeData = [];
+  import { chatPointToHtml, chatPointToMarkdown } from "../stores/render-markdown";
+  export let tree_data: HierarchyItem[] = $tree;
 
   function summaryKeyup(event: KeyboardEvent) {
       if (event.key ==  ' ' && document.activeElement!.tagName != 'SUMMARY') {
@@ -15,39 +19,16 @@
     console.log('toggle expand', e);
     tree_data = [...tree_data, ({ name: 'hodor', children: []})];
   }
+
+  
 </script>
 
 <div class="xnowrap">
   <ul>
-    {#each tree_data as item, i}
-        <li>
-            {#if item.children}
-              <details>
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <summary class="flex" on:keyup={summaryKeyup} >
-                    <slot {item} list={tree_data} id={i}>
-                      <ChatPointCard text={item.name} hasChildren={!!item.children.length} on:expand={toggleExpand} />
-                    </slot>
-                </summary>
-            
-                {#if item.children}
-                    <div class="pl-8">
-                        <svelte:self tree_data={item.children} let:item let:list={tree_data} let:id={i}>
-                            <slot {item} list={tree_data} id={i}>
-                              <ChatPointCard text={item.name} hasChildren={!!item.children.length}  />
-                            </slot>
-                        </svelte:self>
-                    </div>
-                {/if}
-              </details>
-            {:else}
-                <slot {item} list={tree_data} id={i}>
-                  {item.name}
-                </slot>
-            {/if}
-        </li>
-    {/each}
-  </ul>
+{#each $chat as item}
+  <li>{@html chatPointToHtml(item)}</li>
+{/each}
+</ul>
 </div>
 <style>
 	ul {

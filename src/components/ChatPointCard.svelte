@@ -22,7 +22,7 @@
   };
 
   function expandClicked() {
-		dispatch('expand', 'hi');
+		// dispatch('expand', 'hi');
 	}
 </script>
 

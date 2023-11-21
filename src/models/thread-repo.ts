@@ -1,16 +1,17 @@
 import { get } from "svelte/store";
-import { activeChatPoint, activeChatPointId } from "../stores/stores";
+import { activeChatPoint, activeChatPointId, chat } from "../stores/stores";
 import { ChatPoint, ChatRole } from "./chat-point";
 
 export const chatPoints: ChatPoint[] = [];
 
-export const createChatPoint = (content: string) => {
+export const createChatPoint = (content: string ) => {
   const current = get(activeChatPoint);
-  const previousId = current?.id ?? undefined;
+  const previousId = current?.id ?? '';
 
   const child = new ChatPoint(previousId, [ { role: ChatRole.USER, content } ]);
   chatPoints.push(child);
   activeChatPointId.set(child.id);
+  chat.set([]); chat.set(chatPoints);
   return child;
 }
 

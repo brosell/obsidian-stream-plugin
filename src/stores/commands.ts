@@ -1,8 +1,8 @@
 import { get } from "svelte/store";
 import { BusEvent, bus } from "../services/bus";
 import { type Completion } from "../models/chat-point";
-import { createChatPoint } from '../models/thread-repo';
-import { readyForInput, activeChatThread, activeChatPoint, activeChatPointId } from './stores';
+import { chatPoints, createChatPoint } from '../models/thread-repo';
+import { readyForInput, activeChatThread, activeChatPoint, activeChatPointId, chat } from './stores';
 import { AiInterface } from "../services/ai";
 
 const ai = new AiInterface(10);
@@ -25,6 +25,8 @@ const commands: Record<string, (m: Record<string, any>) => void> = {
     readyForInput.set(true);
     activeChatPointId.set('');
     activeChatPointId.set(cp!.id);
+
+    chat.set([]); chat.set(chatPoints);
   }
 };
 

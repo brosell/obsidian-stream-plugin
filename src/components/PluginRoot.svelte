@@ -4,22 +4,6 @@
   import ChatInput from './ChatInput.svelte';
   import { onMount } from 'svelte';
 
-  import { transformToTree, type TreeData } from '../services/nested-list-builder';
-  import {hierarchicalEntries} from '../testdata/tree';
-
-  let tree_data: TreeData = [];
-
-  const trans = hierarchicalEntries.map(i => ({
-      id: i.id,
-      parent: i.parent,
-      name: i.name,
-      children: [] as TreeData
-  } ));    
-    
-    const treeRaw = transformToTree(trans , i => i.parent, i => i.name);
-    tree_data = treeRaw;
-  
-  
   let textAreaContent: string = "";
   let chatInputComponent: ChatInput;
 
@@ -74,7 +58,7 @@
 
 <div class="flex h-full">
   <div bind:this={leftPanel} class=" p-4 overflow-auto" style="width:50%;">
-    <TreeView {tree_data}/>
+    <TreeView />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div id="resizer" on:mousedown={initResize}></div>
