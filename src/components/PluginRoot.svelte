@@ -56,7 +56,7 @@
   
 </script>
 
-<div class="flex h-full">
+<div class="flex h-full select-text">
   <div bind:this={leftPanel} class=" p-4 overflow-auto" style="width:50%;">
     <TreeView />
   </div>

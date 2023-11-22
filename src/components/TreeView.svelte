@@ -18,6 +18,5 @@
 		margin: 0;
 		list-style: none;
 		padding-left: 1.2rem; 
-		user-select: none;
 	}
 </style>
