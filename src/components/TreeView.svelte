@@ -9,7 +9,7 @@
 <div class="nowrap">
   {#each $treeDisplay as chatPointDisplay}
     <div style="padding-left: {chatPointDisplay.depth}em;">
-      <ChatPointCard text={chatPointDisplay.displayValue}  isActive={!!$activeChatThread.find(cp => cp.id === chatPointDisplay.id)}/>
+      <ChatPointCard header={`Id: ${chatPointDisplay.id}`} text={chatPointDisplay.displayValue}  isActive={!!$activeChatThread.find(cp => cp.id === chatPointDisplay.id)}/>
     </div>
   {/each}
 </div>

@@ -3,6 +3,7 @@
 
   const dispatch = createEventDispatcher();
   
+  export let header = 'header';
   export let text = 'Default Card Text';
   export let isActive = false;
   
@@ -54,16 +55,21 @@
 </style>
 
   <div class="card {isActive?'active':''}">
-    <p class="m-0">{@html text}</p>
-    <div class="icon-row">
-      <button on:click={handleIconClickBranch} title="Branch">
-        ⤴️
-      </button>
-      <button on:click={handleIconClickFork} title="Fork">
-        🔀
-      </button>
-      <button on:click={handleIconClickSummarize} title="Summarize">
-        📋
-      </button>
-    </div>
+    <details open={isActive}>
+      <summary>
+        {@html header}
+      </summary>
+      <p class="m-0">{@html text}</p>
+      <div class="icon-row">
+        <button on:click={handleIconClickBranch} title="Branch">
+          ⤴️
+        </button>
+        <button on:click={handleIconClickFork} title="Fork">
+          🔀
+        </button>
+        <button on:click={handleIconClickSummarize} title="Summarize">
+          📋
+        </button>
+      </div>
+    </details>
   </div>

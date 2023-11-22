@@ -18,7 +18,7 @@ export interface ChatPoint {
 
 export const chatPointToMarkdown = (item: ChatPoint) => {
   const completionsMarkdown = item.completions.map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
-  return `**Id: ${item.id}**<br/> ${completionsMarkdown}`;
+  return `${completionsMarkdown}`;
 }
 
 export const chatPointToHtml = (item: ChatPoint) => {
