@@ -1,3 +1,5 @@
+import type { ChatPoint } from "../models/chat-point";
+
 type Formatter<T> = (item: T) => string;
 type IdFn<T> = (item: T) => string;
 type TtoString<T> = (item: T) => string;
@@ -36,4 +38,63 @@ export function buildHierarchy(items: Item[]): HierarchyItem[] {
   });
 
   return rootItems;
+}
+
+interface ChatPointDisplay {
+  id: string;
+  depth: number;
+  displayValue: string;
+}
+
+export function prepareChatPointsForDisplay(
+  chatPoints: ChatPoint[],
+  getDisplayValue: (chatPoint: ChatPoint) => string
+): ChatPointDisplay[] {
+  const chatPointMap = new Map<string, ChatPoint>();
+  chatPoints.forEach((chatPoint) => {
+    chatPointMap.set(chatPoint.id, chatPoint);
+  });
+
+  const findRoots = () => chatPoints.filter((cp) => !cp.previousId);
+
+  const computeDepth = (chatPoint: ChatPoint): number => {
+    let depth = 0;
+    let current = chatPoint;
+    while (current.previousId) {
+      if (chatPointMap.has(current.previousId)) {
+        current = chatPointMap.get(current.previousId)!;
+        depth++;
+      } else {
+        throw new Error('Invalid previousId reference found');
+      }
+    }
+    return depth;
+  };
+
+  const buildDisplayPoints = (current: ChatPoint, depth: number): ChatPointDisplay[] => {
+    const displayPoints: ChatPointDisplay[] = [{
+      id: current.id,
+      depth: depth,
+      displayValue: getDisplayValue(current)
+    }];
+    
+    const children = chatPoints.filter((cp) => cp.previousId === current.id);
+    children.forEach((child) => {
+      displayPoints.push(...buildDisplayPoints(child, depth + 1));
+    });
+
+    return displayPoints;
+  };
+
+  const roots = findRoots();
+  const chatPointDisplay: ChatPointDisplay[] = [];
+
+  roots.forEach((root) => {
+    if (root.previousId) {
+      throw new Error('Root node has a previousId');
+    }
+    chatPointDisplay.push(...buildDisplayPoints(root, computeDepth(root)));
+  });
+
+  return chatPointDisplay;
 }

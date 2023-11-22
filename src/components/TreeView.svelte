@@ -1,31 +1,18 @@
 <script lang="ts">
   import type { HierarchyItem } from "../services/nested-list-builder";
-  import { tree } from "../stores/stores";
 
   // https://maximmaeder.com/tree-view-with-svelte/
 
   import { chatPointToHtml } from "../stores/render-markdown";
   import { chatPoints } from "../models/thread-repo";
-  export let tree_data: HierarchyItem[] = $tree;
+  import { treeDisplay } from "../stores/stores";
 
-  function summaryKeyup(event: KeyboardEvent) {
-      if (event.key ==  ' ' && document.activeElement!.tagName != 'SUMMARY') {
-          event.preventDefault();
-      }
-  }
-
-  function toggleExpand(e: any) {
-    console.log('toggle expand', e);
-    tree_data = [...tree_data, ({ name: 'hodor', children: []})];
-  }
-
-  
 </script>
 
 <div class="xnowrap">
   <ul>
-{#each $chatPoints as item}
-  <li>{@html chatPointToHtml(item)}</li>
+{#each $treeDisplay as item}
+  <li>{@html '&nbsp'.repeat(item.depth)} {item.displayValue}</li>
 {/each}
 </ul>
 </div>
