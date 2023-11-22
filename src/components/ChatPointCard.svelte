@@ -4,7 +4,7 @@
   const dispatch = createEventDispatcher();
   
   export let text = 'Default Card Text';
-  export let hasChildren = false;
+  export let depth = 0;
   
   const handleIconClickBranch = () => {
     // Branch action
@@ -53,12 +53,6 @@
   <div class="card">
     <p>{text}</p>
     <div class="icon-row">
-      {#if hasChildren}
-      <button on:click={expandClicked} title="Expand">
-        &gt;
-      </button>
-
-      {/if}
       <button on:click={handleIconClickBranch} title="Branch">
         ⤴️
       </button>

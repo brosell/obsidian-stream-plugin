@@ -40,7 +40,7 @@ export function buildHierarchy(items: Item[]): HierarchyItem[] {
   return rootItems;
 }
 
-interface ChatPointDisplay {
+export interface ChatPointDisplay {
   id: string;
   depth: number;
   displayValue: string;

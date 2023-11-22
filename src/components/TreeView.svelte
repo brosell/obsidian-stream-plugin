@@ -1,20 +1,15 @@
 <script lang="ts">
-  import type { HierarchyItem } from "../services/nested-list-builder";
-
-  // https://maximmaeder.com/tree-view-with-svelte/
-
-  import { chatPointToHtml } from "../stores/render-markdown";
-  import { chatPoints } from "../models/thread-repo";
   import { treeDisplay } from "../stores/stores";
+  import ChatPointCard from "./ChatPointCard.svelte";
 
 </script>
 
-<div class="xnowrap">
-  <ul>
-{#each $treeDisplay as item}
-  <li>{@html '&nbsp'.repeat(item.depth)} {item.displayValue}</li>
-{/each}
-</ul>
+<div class="nowrap">
+  {#each $treeDisplay as chatPointDisplay}
+    <div style="padding-left: {chatPointDisplay.depth}em">
+      <ChatPointCard text={chatPointDisplay.displayValue} />
+    </div>
+  {/each}
 </div>
 <style>
 	ul {
