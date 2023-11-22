@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import { OPENAI_API_KEY } from "../oai-api-key";
 import type { Completion } from "../models/chat-point";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions.mjs";
-import { BusEvent, bus } from "./bus";
+import { BusEvent, sendMessage } from "./bus";
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
@@ -31,7 +31,7 @@ export class AiInterface {
       );
       
       const content = chatCompletion?.choices[0]?.message.content ?? 'FALSE -m';
-      bus.set({event: BusEvent.AIResponseAvailable, details: { context, content }});
+      sendMessage(BusEvent.AIResponseAvailable, context, { content });
       return content;
     } catch (error) {
       return `FALSE -${error}`;

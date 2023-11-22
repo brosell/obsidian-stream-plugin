@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { BusEvent, bus } from '../services/bus';
+  import { BusEvent, Context, sendMessage } from '../services/bus';
   import { readyForInput } from '../stores/stores';
 
   export let textAreaContent: string;
@@ -19,7 +19,7 @@
   function handleKeyPress(e: KeyboardEvent): void {
     if (e.key === "Enter" && e.shiftKey) {
       if ($readyForInput) {
-        bus.set( { event: BusEvent.ChatIntent, details: { content: textAreaContent }});
+        sendMessage(BusEvent.ChatIntent, Context.Null, { content: textAreaContent});
         textAreaContent = "";
       }
       e.preventDefault();
