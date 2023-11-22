@@ -9,14 +9,7 @@ ${JSON.stringify(t.flatMap(c => c.completions), null, 2)}
 \`\`\`
 `);
 
-export const chatPointToMarkdown = (item: ChatPoint) => {
-  const completionsMarkdown = item.completions.map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
-  return `### ${item.id}\n${completionsMarkdown}`;
-}
 
-export const chatPointToHtml = (item: ChatPoint) => {
-  return marked(chatPointToMarkdown(item));
-}
 
 export const markdown = derived(activeChatThread, t => {
   const rfi = get(readyForInput);

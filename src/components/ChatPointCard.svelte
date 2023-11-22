@@ -51,7 +51,7 @@
 </style>
 
   <div class="card">
-    <p>{text}</p>
+    <p class="m-0">{@html text}</p>
     <div class="icon-row">
       <button on:click={handleIconClickBranch} title="Branch">
         ⤴️

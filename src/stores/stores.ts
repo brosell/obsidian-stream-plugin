@@ -1,9 +1,10 @@
 import { } from '../services/debug-utils'
 import { } from './commands'
 import { writable, derived, readable, get } from "svelte/store";
-import { type ChatPoint, ChatRole } from "../models/chat-point";
+import { type ChatPoint, ChatRole, chatPointToHtml } from "../models/chat-point";
 import { chatPoints, addNewChatPoint, deriveThread } from '../models/thread-repo';
 import { buildHierarchy, prepareChatPointsForDisplay } from '../services/nested-list-builder';
+// import { chatPointToHtml } from './render-markdown';
 
 export const activeChatPointId = writable('');
 
@@ -15,7 +16,7 @@ export const readyForInput = writable(true);
 export const chat = chatPoints; // todo redundant and confusing
 
 export const treeDisplay = derived(chatPoints, (chatPoints) =>
-  prepareChatPointsForDisplay(chatPoints, (cp) => cp.id )
+  prepareChatPointsForDisplay(chatPoints, (cp) => chatPointToHtml(cp) )
 )
 
 // test stuff
