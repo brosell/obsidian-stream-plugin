@@ -4,7 +4,7 @@
   const dispatch = createEventDispatcher();
   
   export let text = 'Default Card Text';
-  export let depth = 0;
+  export let isActive = false;
   
   const handleIconClickBranch = () => {
     // Branch action
@@ -36,6 +36,9 @@
     max-width: 350px;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
   }
+  .active {
+    background-color: darkblue;
+  }
   .icon-row {
     display: flex;
     justify-content: right;
@@ -50,7 +53,7 @@
   }
 </style>
 
-  <div class="card">
+  <div class="card {isActive?'active':''}">
     <p class="m-0">{@html text}</p>
     <div class="icon-row">
       <button on:click={handleIconClickBranch} title="Branch">
