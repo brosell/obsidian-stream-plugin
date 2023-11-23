@@ -47,7 +47,5 @@ export const deriveThread = (leafId: string): ChatPoint[] => {
     }
     answer.unshift(node);
   }
-  console.log('chats:', arr)
-  console.log('thread:', answer)
   return answer;
 }

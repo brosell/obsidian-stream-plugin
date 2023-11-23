@@ -5,7 +5,7 @@ import { addNewChatPoint, deriveThread, updateChatPoint } from '../models/thread
 import { readyForInput, activeChatPointId } from '../stores/stores';
 import { AiInterface } from "../services/ai";
 
-const ai = new AiInterface(10);
+const ai = new AiInterface(100);
 
 const commands: Record<string, (m: Message) => void> = {
   [BusEvent.ChatIntent]: (message) => {
