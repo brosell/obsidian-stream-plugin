@@ -7,24 +7,21 @@
   export let text = 'Default Card Text';
   export let isActive = false;
   
-  const handleIconClickBranch = () => {
+  export let onBranch = () => {
     // Branch action
     console.log('branch');
   };
 
-  const handleIconClickFork = () => {
+  export let onFork = () => {
     // Fork action
     console.log('fork');
   };
 
-  const handleIconClickSummarize = () => {
+  export let onSummarize = () => {
     // Summarize action
     console.log('summarize');
   };
 
-  function expandClicked() {
-		// dispatch('expand', 'hi');
-	}
 </script>
 
 <style>
@@ -61,13 +58,13 @@
       </summary>
       <p class="m-0">{@html text}</p>
       <div class="icon-row">
-        <button on:click={handleIconClickBranch} title="Branch">
+        <button on:click={onBranch} title="Branch">
           ⤴️
         </button>
-        <button on:click={handleIconClickFork} title="Fork">
+        <button on:click={onFork} title="Fork">
           🔀
         </button>
-        <button on:click={handleIconClickSummarize} title="Summarize">
+        <button on:click={onSummarize} title="Summarize">
           📋
         </button>
       </div>

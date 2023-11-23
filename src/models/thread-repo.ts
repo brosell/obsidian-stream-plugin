@@ -1,5 +1,6 @@
 import { get, writable } from "svelte/store";
 import { type ChatPoint, ChatRole } from "./chat-point";
+import { activeChatPointId } from "../stores/stores";
 
 // export let chatPoints: ChatPoint[] = [];
 export const chatPoints = writable([] as ChatPoint[]);
@@ -10,6 +11,16 @@ export const addNewChatPoint = (content: string, previousId: string = '', role: 
   const child: ChatPoint = { id: `${g_id++}`, previousId, completions: [{ role, content }]};
   chatPoints.update(arr => [...arr, child ]);
   return child;
+}
+
+export const forkChatPoint = (chatPointId: string) => {
+  const source = getChatPoint(chatPointId);
+  if (!source) {
+    throw new Error('tried to fork nonexistent ChatPoint');
+  }
+  const newCP: ChatPoint = {...source, id: `${g_id++}`, previousId: '', completions: [...source.completions]};
+  chatPoints.update(arr => [...arr, newCP]);
+  activeChatPointId.set(newCP.id);
 }
 
 export const getChatPoint = (id: string): ChatPoint | undefined => get(chatPoints).find(cp => cp.id === id);
