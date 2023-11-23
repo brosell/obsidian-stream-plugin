@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { BusEvent, Context, sendMessage } from '../services/bus';
   import { readyForInput } from '../stores/stores';
+  import { isSlashCommandFormat } from '../commands/slash-functions';
 
   export let textAreaContent: string;
   export let adjustTextareaHeight: () => void;
@@ -18,8 +19,14 @@
 
   function handleKeyPress(e: KeyboardEvent): void {
     if (e.key === "Enter" && e.shiftKey) {
+      const trimmed = textAreaContent.trim();
       if ($readyForInput) {
-        sendMessage(BusEvent.ChatIntent, Context.Null, { content: textAreaContent});
+        if (isSlashCommandFormat(trimmed)) {
+          sendMessage(BusEvent.SlashFunction, Context.Null, { content: trimmed});
+        }
+        else {
+          sendMessage(BusEvent.ChatIntent, Context.Null, { content: trimmed});
+        }
         textAreaContent = "";
       }
       e.preventDefault();

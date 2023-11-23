@@ -1,4 +1,7 @@
+import { get } from "svelte/store";
+import { chatPoints } from "../models/thread-repo";
 import { BusEvent, bus, type Message } from "../services/bus";
+import { activeChatPointId } from "../stores/stores";
 
 const commands: Record<string, (m: Message) => void> = {
   [BusEvent.SlashFunction]: (message) => {
@@ -8,10 +11,25 @@ const commands: Record<string, (m: Message) => void> = {
     }
 
     const { commandName, args} = commandSpec;
+
+    if (commandName && slashFunctions[commandName]) {
+      slashFunctions[commandName](args);
+    }
   },
+};
+
+const slashFunctions: Record<string, (c: string[]) => void> = {
+  setThread: (args: string[]) => {
+    console.log('setting thread:', args[0]);
+    const id = args[0];
+    const cps = get(chatPoints);
+    if (cps.find(sp => sp.id === id)) {
+      activeChatPointId.set(id);
+    }
+  }
 }
 
-function isSlashCommandFormat(input: string): boolean {
+export function isSlashCommandFormat(input: string): boolean {
   const commandPattern = /^\/\w+\(.*\)$/;
   return commandPattern.test(input);
 }
