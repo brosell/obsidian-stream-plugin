@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
-import { addNewChatPoint, chatPoints } from "../models/thread-repo";
+import { addNewChatPoint, chatPoints, deleteChatPointAndDescendants, getChatPoint } from "../models/thread-repo";
 import { BusEvent, bus, type Message } from "../services/bus";
-import { activeChatPointId } from "../stores/stores";
+import { activeChatPoint, activeChatPointId, activeChatThread } from "../stores/stores";
 import { ChatRole } from "../models/chat-point";
 
 const slashFunctions: Record<string, (c: string[]) => void> = {
@@ -18,6 +18,25 @@ const slashFunctions: Record<string, (c: string[]) => void> = {
     const pid = get(activeChatPointId);
     const cp = addNewChatPoint(prompt, pid, ChatRole.SYSTEM);
     activeChatPointId.set(cp.id);
+  },
+  deleteNode: (args: string[]) => {
+    const idToDelete = args[0];
+    if (!idToDelete || idToDelete === 'root') {
+      return;
+    }
+
+    const currentThreadIds = [...get(activeChatThread).map(cp => cp.id)].reverse();
+    activeChatPointId.set('root');
+    deleteChatPointAndDescendants(idToDelete);
+    
+    for(let i = 0, [cpId] = currentThreadIds[i]; i < currentThreadIds.length; i++) {
+      const cp = getChatPoint(currentThreadIds[i]);
+      if (cp) {
+        activeChatPointId.set(cp.id)
+        break;
+      }
+    }
+
   }
 }
 

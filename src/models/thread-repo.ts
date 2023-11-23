@@ -12,6 +12,8 @@ export const addNewChatPoint = (content: string, previousId: string = '', role: 
   return child;
 }
 
+export const getChatPoint = (id: string): ChatPoint | undefined => get(chatPoints).find(cp => cp.id === id);
+
 export const updateChatPoint = (chatPointId: string, updater:(chatPoint: ChatPoint) => ChatPoint): ChatPoint => {
   let updated: ChatPoint;
   chatPoints.update(arr => {
@@ -48,4 +50,23 @@ export const deriveThread = (leafId: string): ChatPoint[] => {
     answer.unshift(node);
   }
   return answer;
+}
+
+export function deleteChatPointAndDescendants(idToDelete: string): void {
+  chatPoints.update(chatPoints => {
+    const chatPointIdsToDelete = new Set<string>();
+    chatPointIdsToDelete.add(idToDelete);
+
+    let currentSize: number;
+    do {
+        currentSize = chatPointIdsToDelete.size;
+        chatPoints.forEach((chatPoint) => {
+            if (chatPoint.previousId && chatPointIdsToDelete.has(chatPoint.previousId)) {
+                chatPointIdsToDelete.add(chatPoint.id);
+            }
+        });
+    } while (chatPointIdsToDelete.size > currentSize);
+
+    return chatPoints.filter(chatPoint => !chatPointIdsToDelete.has(chatPoint.id));
+  })
 }
