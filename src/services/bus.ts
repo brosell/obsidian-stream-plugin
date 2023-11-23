@@ -3,7 +3,8 @@ import { writable } from "svelte/store";
 export enum BusEvent {
   ChatIntent = 'ChatIntent',
   UserPromptAvailable = 'UserPromptReady',
-  AIResponseAvailable = 'AIResponseReady'
+  AIResponseAvailable = 'AIResponseReady',
+  SlashFunction = 'SlashFunction',
 }
 
 type MessageContext = {

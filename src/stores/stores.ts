@@ -1,5 +1,5 @@
 import { } from '../services/debug-utils'
-import { } from './commands'
+import { } from '../commands/commands'
 import { writable, derived, readable, get } from "svelte/store";
 import { type ChatPoint, ChatRole, chatPointToHtml } from "../models/chat-point";
 import { chatPoints, addNewChatPoint, deriveThread } from '../models/thread-repo';
@@ -20,7 +20,7 @@ export const treeDisplay = derived(chatPoints, (chatPoints) =>
 )
 
 // test stuff
-const rootCP: ChatPoint = {previousId: '', id: 'root', completions: [{ role: ChatRole.SYSTEM, content: 'Your name is Gollum and you are a helpful assistant for telling riddles' } ]};
+const rootCP: ChatPoint = {previousId: '', id: 'root', completions: [{ role: ChatRole.SYSTEM, content: 'You are a Helpful assistant for coding and other tasks' } ]};
 chatPoints.update(_ => [rootCP])
 
 activeChatPointId.set(rootCP.id);

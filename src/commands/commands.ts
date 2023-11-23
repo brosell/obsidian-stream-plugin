@@ -2,7 +2,7 @@ import { get } from "svelte/store";
 import { BusEvent, type Message, bus, sendMessage } from "../services/bus";
 import { ChatRole, type Completion } from "../models/chat-point";
 import { addNewChatPoint, deriveThread, updateChatPoint } from '../models/thread-repo';
-import { readyForInput, activeChatPointId } from './stores';
+import { readyForInput, activeChatPointId } from '../stores/stores';
 import { AiInterface } from "../services/ai";
 
 const ai = new AiInterface(10);
