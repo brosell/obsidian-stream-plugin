@@ -11,7 +11,8 @@ const commands: Record<string, (m: Message) => void> = {
     }
 
     const { commandName, args} = commandSpec;
-
+    console.log('/function:', commandName, 'args', args);
+    
     if (commandName && slashFunctions[commandName]) {
       slashFunctions[commandName](args);
     }
@@ -44,7 +45,7 @@ function parseSlashCommand(input: string): { commandName: string; args: string[]
 
   const argsMatch = input.match(/\((.*)\)/);
   const argsString = argsMatch ? argsMatch[1] : '';
-  const args = argsString.split(',').map(arg => arg.trim());
+  const args = argsString.split(',').map(arg => arg.trim()).filter(arg => arg.length);
 
   return { commandName, args };
 }
