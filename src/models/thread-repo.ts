@@ -6,8 +6,8 @@ export const chatPoints = writable([] as ChatPoint[]);
 
 let g_id = 0;
 
-export const addNewChatPoint = (content: string, previousId: string = '') => {
-  const child: ChatPoint = { id: `${g_id++}`, previousId, completions: [{ role: ChatRole.USER, content }]};
+export const addNewChatPoint = (content: string, previousId: string = '', role: ChatRole = ChatRole.USER) => {
+  const child: ChatPoint = { id: `${g_id++}`, previousId, completions: [{ role, content }]};
   chatPoints.update(arr => [...arr, child ]);
   return child;
 }

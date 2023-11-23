@@ -1,7 +1,25 @@
 import { get } from "svelte/store";
-import { chatPoints } from "../models/thread-repo";
+import { addNewChatPoint, chatPoints } from "../models/thread-repo";
 import { BusEvent, bus, type Message } from "../services/bus";
 import { activeChatPointId } from "../stores/stores";
+import { ChatRole } from "../models/chat-point";
+
+const slashFunctions: Record<string, (c: string[]) => void> = {
+  setThread: (args: string[]) => {
+    console.log('setting thread:', args[0]);
+    const id = args[0];
+    const cps = get(chatPoints);
+    if (cps.find(sp => sp.id === id)) {
+      activeChatPointId.set(id);
+    }
+  },
+  addSystemPrompt: (args: string[]) => {
+    const prompt = args.join(','); // just in case the prompt has commas which would have been used to split
+    const pid = get(activeChatPointId);
+    const cp = addNewChatPoint(prompt, pid, ChatRole.SYSTEM);
+    activeChatPointId.set(cp.id);
+  }
+}
 
 const commands: Record<string, (m: Message) => void> = {
   [BusEvent.SlashFunction]: (message) => {
@@ -19,17 +37,6 @@ const commands: Record<string, (m: Message) => void> = {
   },
 };
 
-const slashFunctions: Record<string, (c: string[]) => void> = {
-  setThread: (args: string[]) => {
-    console.log('setting thread:', args[0]);
-    const id = args[0];
-    const cps = get(chatPoints);
-    if (cps.find(sp => sp.id === id)) {
-      activeChatPointId.set(id);
-    }
-  }
-}
-
 export function isSlashCommandFormat(input: string): boolean {
   const commandPattern = /^\/\w+\(.*\)$/;
   return commandPattern.test(input);
@@ -45,7 +52,7 @@ function parseSlashCommand(input: string): { commandName: string; args: string[]
 
   const argsMatch = input.match(/\((.*)\)/);
   const argsString = argsMatch ? argsMatch[1] : '';
-  const args = argsString.split(',').map(arg => arg.trim()).filter(arg => arg.length);
+  const args = argsString.split(',').map(arg => arg.trim());
 
   return { commandName, args };
 }
