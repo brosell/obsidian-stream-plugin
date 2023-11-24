@@ -24,33 +24,6 @@
 
 </script>
 
-<style>
-  .card {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 4px;
-    margin-bottom: 8px;
-    min-width: 350px;
-    max-width: 350px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-  }
-  .active {
-    background-color: darkblue;
-  }
-  .icon-row {
-    display: flex;
-    justify-content: right;
-    margin-top: 16px;
-  }
-  button {
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 16px;
-    margin-right: 4px;
-  }
-</style>
-
   <div class="card {isActive?'active':''}">
     <details open={isActive}>
       <summary>
@@ -70,3 +43,31 @@
       </div>
     </details>
   </div>
+
+
+  <style>
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px;
+      margin-bottom: 8px;
+      min-width: 350px;
+      max-width: 350px;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .active {
+      background-color: darkblue;
+    }
+    .icon-row {
+      display: flex;
+      justify-content: right;
+      margin-top: 16px;
+    }
+    button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 4px;
+    }
+  </style>
