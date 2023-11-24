@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
 import { addNewChatPoint, chatPoints, deleteChatPointAndDescendants, getChatPoint } from "../models/thread-repo";
 import { BusEvent, bus, type Message } from "../services/bus";
-import { activeChatPoint, activeChatPointId, activeChatThread } from "../stores/stores";
+import { activeChatPoint, activeChatPointId, activeChatThread, userPromptInput } from "../stores/stores";
 import { ChatRole } from "../models/chat-point";
 
 const slashFunctions: Record<string, (c: string[]) => void> = {
@@ -36,7 +36,15 @@ const slashFunctions: Record<string, (c: string[]) => void> = {
         break;
       }
     }
-
+  },
+  refine: (args: string[]) => {
+    const curCP = get(activeChatPoint);
+    const userPrompt = curCP?.completions.find(c => c.role === ChatRole.USER)?.content;
+    if (!userPrompt) {
+      return;
+    }
+    activeChatPointId.set(curCP.previousId);
+    setTimeout(() => userPromptInput.set(userPrompt));
   }
 }
 

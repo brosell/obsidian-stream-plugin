@@ -19,6 +19,8 @@ export const treeDisplay = derived(chatPoints, (chatPoints) =>
   prepareChatPointsForDisplay(chatPoints, (cp) => chatPointToHtml(cp) )
 )
 
+export const userPromptInput = writable('');
+
 // test stuff
 const rootCP: ChatPoint = {previousId: '', id: 'root', completions: [{ role: ChatRole.SYSTEM, content: 'You are a Helpful assistant for coding and other tasks' } ]};
 chatPoints.update(_ => [rootCP])
