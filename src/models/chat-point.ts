@@ -14,6 +14,7 @@ export interface ChatPoint {
   id: string;
   previousId: string;
   completions: Completion[];
+  summary?: string;
 }
 
 export const chatPointToMarkdown = (item: ChatPoint) => {

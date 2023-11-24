@@ -44,6 +44,7 @@ export interface ChatPointDisplay {
   id: string;
   depth: number;
   displayValue: string;
+  summary?: string;
 }
 
 export function prepareChatPointsForDisplay(
@@ -75,7 +76,8 @@ export function prepareChatPointsForDisplay(
     const displayPoints: ChatPointDisplay[] = [{
       id: current.id,
       depth: depth,
-      displayValue: getDisplayValue(current)
+      displayValue: getDisplayValue(current),
+      summary: current.summary
     }];
     
     const children = chatPoints.filter((cp) => cp.previousId === current.id);

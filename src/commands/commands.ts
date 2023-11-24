@@ -2,10 +2,7 @@ import { get } from "svelte/store";
 import { BusEvent, type Message, bus, sendMessage } from "../services/bus";
 import { ChatRole, type Completion } from "../models/chat-point";
 import { addNewChatPoint, deriveThread, updateChatPoint } from '../models/thread-repo';
-import { readyForInput, activeChatPointId } from '../stores/stores';
-import { AiInterface } from "../services/ai";
-
-const ai = new AiInterface(100);
+import { readyForInput, activeChatPointId, AI } from '../stores/stores';
 
 const commands: Record<string, (m: Message) => void> = {
   [BusEvent.ChatIntent]: (message) => {
@@ -23,7 +20,7 @@ const commands: Record<string, (m: Message) => void> = {
     }
     const thread = deriveThread(context.referenceId);
     const completions = thread.flatMap(cp => cp.completions) as Completion[];
-    ai.prompt(completions, context);
+    AI.prompt(completions, context);
   },
 
   [BusEvent.AIResponseAvailable]: (message) => {

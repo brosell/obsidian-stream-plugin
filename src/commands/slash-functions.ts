@@ -1,8 +1,8 @@
 import { get } from "svelte/store";
-import { addNewChatPoint, chatPoints, deleteChatPointAndDescendants, getChatPoint } from "../models/thread-repo";
+import { addNewChatPoint, chatPoints, deleteChatPointAndDescendants, getChatPoint, updateChatPoint } from "../models/thread-repo";
 import { BusEvent, bus, type Message } from "../services/bus";
-import { activeChatPoint, activeChatPointId, activeChatThread, userPromptInput } from "../stores/stores";
-import { ChatRole } from "../models/chat-point";
+import { AI, activeChatPoint, activeChatPointId, activeChatThread, userPromptInput } from "../stores/stores";
+import { ChatRole, chatPointToMarkdown } from "../models/chat-point";
 
 const slashFunctions: Record<string, (c: string[]) => void> = {
   setThread: (args: string[]) => {
@@ -37,7 +37,7 @@ const slashFunctions: Record<string, (c: string[]) => void> = {
       }
     }
   },
-  refine: (args: string[]) => {
+  refine: (_: string[]) => {
     const curCP = get(activeChatPoint);
     const userPrompt = curCP?.completions.find(c => c.role === ChatRole.USER)?.content;
     if (!userPrompt) {
@@ -45,6 +45,20 @@ const slashFunctions: Record<string, (c: string[]) => void> = {
     }
     activeChatPointId.set(curCP.previousId);
     setTimeout(() => userPromptInput.set(userPrompt));
+  },
+  summarize: async (args: string[]) => {
+    const [cpId] = args;
+    const cp = getChatPoint(cpId);
+    if (!cp) {
+      throw new Error(`tried to summarize nonexistent ChatPoint with id: ${cpId}`);
+    }
+    const cpText = chatPointToMarkdown(cp);
+    const prompt = `Summarize the following exchange with 10 or fewer words. The summary must not excide 10 words
+    ===
+    ${cpText}`;
+
+    const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt  }], 'awaited');
+    updateChatPoint(cp.id, cp => ({...cp, summary }));
   }
 }
 
