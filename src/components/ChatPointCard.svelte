@@ -27,7 +27,7 @@
   <div class="card {isActive?'active':''}">
     <details open={isActive}>
       <summary>
-        {@html header}
+        <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
       </summary>
       <p class="m-0">{@html text}</p>
       <div class="icon-row">

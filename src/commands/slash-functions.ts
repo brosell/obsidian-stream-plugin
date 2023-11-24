@@ -1,6 +1,6 @@
 import { get } from "svelte/store";
 import { addNewChatPoint, chatPoints, deleteChatPointAndDescendants, getChatPoint, updateChatPoint } from "../models/thread-repo";
-import { BusEvent, bus, type Message } from "../services/bus";
+import { BusEvent, bus, type Message, sendMessage, Context } from "../services/bus";
 import { AI, activeChatPoint, activeChatPointId, activeChatThread, userPromptInput } from "../stores/stores";
 import { ChatRole, chatPointToMarkdown } from "../models/chat-point";
 
@@ -47,7 +47,7 @@ const slashFunctions: Record<string, (c: string[]) => void> = {
     setTimeout(() => userPromptInput.set(userPrompt));
   },
   summarize: async (args: string[]) => {
-    const [cpId] = args;
+    const cpId = args[0] || get(activeChatPointId);
     const cp = getChatPoint(cpId);
     if (!cp) {
       throw new Error(`tried to summarize nonexistent ChatPoint with id: ${cpId}`);
@@ -59,7 +59,33 @@ const slashFunctions: Record<string, (c: string[]) => void> = {
 
     const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt  }], 'awaited');
     updateChatPoint(cp.id, cp => ({...cp, summary }));
-  }
+  },
+  summarizeThread: async (args: string[]) => {
+    let [cpId, wordCount] = args;
+    wordCount = wordCount || '100';
+    cpId = cpId || get(activeChatPointId);
+    const cp = getChatPoint(cpId);
+    if (!cp) {
+      throw new Error(`tried to summarize nonexistent thread with id: ${cpId}`);
+    }
+    activeChatPointId.set(cpId);
+
+    const cpText = chatPointToMarkdown(cp);
+    const prompt = `Summarize the following exchange with ${wordCount} or fewer words. The summary must not excide ${wordCount} words
+    ===
+    ${cpText}`;
+
+    //sendMessage(BusEvent.ChatIntent, Context.Null, { content: prompt});
+
+    const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt  }], 'awaited');
+    const systemPrompt = `The following is a summary of our conversation so far.
+    ===
+    ${summary}`;
+
+    const newCP = addNewChatPoint(systemPrompt, cpId, ChatRole.SYSTEM);
+    activeChatPointId.set(newCP.id);
+
+  },
 }
 
 const commands: Record<string, (m: Message) => void> = {
