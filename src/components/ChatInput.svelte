@@ -6,7 +6,6 @@
    
   export let adjustTextareaHeight: () => void;
 
-  let p = $userPromptInput
 
   let textArea: HTMLTextAreaElement;
 

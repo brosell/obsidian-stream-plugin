@@ -4,7 +4,6 @@
   import ChatInput from './ChatInput.svelte';
   import { onMount } from 'svelte';
 
-  let textAreaContent: string = "";
   let chatInputComponent: ChatInput;
 
   function adjustTextareaHeight(): void {
@@ -64,7 +63,7 @@
   <div id="resizer" on:mousedown={initResize}></div>
   <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
     <MarkdownView />
-    <ChatInput bind:this={chatInputComponent} {textAreaContent} {adjustTextareaHeight} />
+    <ChatInput bind:this={chatInputComponent} {adjustTextareaHeight} />
   </div>
 </div>
 
