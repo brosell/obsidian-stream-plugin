@@ -22,19 +22,40 @@ export default class ObsidianNoteConnections extends Plugin {
 	}
 
 	async onload() {
-		this.registerView(VIEW_TYPE_EXAMPLE, (leaf: WorkspaceLeaf) => new ExampleView(leaf));
+		this.registerView(VIEW_TYPE_EXAMPLE, (leaf: WorkspaceLeaf) => {
+			console.log('creating view', leaf)
+			return new ExampleView(leaf)
+		});
 
 		this.registerEvent(this.app.workspace.on('file-open', this.handleFileOpen));
 		(window as any).toggleMyPluginView = this.toggleView.bind(this);
+		this.addCommand({
+      id: 'toggle-stream-view',
+      name: 'Toggle between Stream and markdown mode',
+      checkCallback: (checking) => {
+				const file = app.workspace.getActiveFile();
+				if (!file) {
+					return;
+				}
+				const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+				if (frontmatter && frontmatter.stream === 'basic') {
+					if (checking) {
+						return true;
+					}
+
+					this.toggleView(file)
+			 	}
+			},
+		});
 	}
 
 	handleFileOpen = async (file: TFile | null): Promise<void> => {
 		if (!file) return;
-
 		const fileContent = await this.app.vault.read(file);
 		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 
 		if (frontmatter && frontmatter.stream === 'basic') {
+			console.log('opening stream file', file);
 			this.openCustomView(file);
 		}
 	};
@@ -42,13 +63,16 @@ export default class ObsidianNoteConnections extends Plugin {
 	openCustomView(file: TFile) {
 		let leaf = this.app.workspace.getLeaf(false);
 		if (leaf.view.getViewType() !== VIEW_TYPE_EXAMPLE) {
+			console.log('opening custom view');
 				leaf.setViewState({
 						type: VIEW_TYPE_EXAMPLE,
 						state: { file: file.path }
 				}).then(() => {
 						const view = (leaf.view as ExampleView);
 						view.setFile(file);
+						// leaf.openFile(file);
 				});
+				
 		}
 }
 

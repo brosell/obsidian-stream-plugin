@@ -9,11 +9,12 @@ export class ExampleView extends ItemView {
 	file: TFile | null = null;
 
 	constructor(leaf: WorkspaceLeaf) {
+		console.log('constructing view');
 		super(leaf);
 	}
 
 	setFile(file: TFile) {
-		this.file = file;
+		// this.file = file;
 		console.log('file', file)
 		// Perform any additional setup required for displaying the file
 	}
@@ -29,9 +30,11 @@ export class ExampleView extends ItemView {
 	}
 
 	async onOpen() {
+		console.log('onOpen');
 		this.component = new Component({
 			target: this.contentEl,
 		});
+		this.file = this.leaf.getViewState().state?.file;
 	}
 
 	async onClose() {
