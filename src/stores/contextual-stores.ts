@@ -18,6 +18,8 @@ export interface ContextualStores {
   userPromptInput: Writable<string>,
   markdown: Writable<string>,
   renderedHtml: Readable<string>,
+  saveData: Readable<string>,
+  loadChatPoints: (loadData: string) => void,
   addNewChatPoint: (content: string, previousId?: string, role?: ChatRole) => ChatPoint,
   getChatPoint: (id: string) => ChatPoint | undefined,
   forkChatPoint: (chatPointId: string) => void,
@@ -42,6 +44,13 @@ export const getContextualStores = (guid: string): ContextualStores => {
 const createDataStores = (guid: string) => {
 
   let g_id = 0;
+
+  const loadChatPoints = (loadData: string): void => {
+    const sd = JSON.parse(loadData.substring(loadData.indexOf('{')));
+    chatPoints.set(sd.chatPoints);
+    activeChatPointId.set(sd.activeChatPointId);
+    g_id = Math.max(...sd.chatPoints.map((cp: { id: string; }) => parseInt(cp.id))) + 1;
+  }
 
   const addNewChatPoint = (content: string, previousId: string = '', role: ChatRole = ChatRole.USER) => {
     const child: ChatPoint = { id: `${g_id++}`, previousId, completions: [{ role, content }] };
@@ -95,7 +104,6 @@ const createDataStores = (guid: string) => {
       }
       answer.unshift(node);
     }
-    console.log(guid, 'answer', answer.map(a => a.id));
     return answer;
   }
 
@@ -142,6 +150,17 @@ const createDataStores = (guid: string) => {
 
   const renderedHtml: Readable<string> = derived(markdown, (markdown: string) => marked(markdown));
 
+  // save to file
+  const saveData: Readable<string> = derived(chatPoints, (chatPoints: ChatPoint[]) => {
+    const yaml = `---
+stream: basic
+---\n\n`;
+
+    const sd = {chatPoints, activeChatPointId: get(activeChatPointId)};
+    const json = JSON.stringify(sd, null, 2);
+    return yaml + json;
+  });
+
   // Bus
   const bus = writable<any>(null);
   const sendMessage = (event: BusEvent, context: MessageContext, details: any = {}) => {
@@ -158,6 +177,7 @@ const createDataStores = (guid: string) => {
   }
 
   return {
+    loadChatPoints,
     addNewChatPoint,
     getChatPoint,
     forkChatPoint,
@@ -176,5 +196,6 @@ const createDataStores = (guid: string) => {
     userPromptInput,
     markdown,
     renderedHtml,
+    saveData,
   }
 }

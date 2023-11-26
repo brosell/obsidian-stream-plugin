@@ -1,17 +1,38 @@
-import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import { ItemView, TFile, TextFileView, WorkspaceLeaf } from "obsidian";
 
 import Component from "../components/PluginRoot.svelte";
+import { getContextualStores } from "../stores/contextual-stores";
+import { get } from "svelte/store";
 
 export const VIEW_TYPE_EXAMPLE = "example-view";
 
-export class ExampleView extends ItemView {
-	component!: Component;
-	file: TFile | null = null;
-
+export class ExampleView extends TextFileView {
+	
 	constructor(leaf: WorkspaceLeaf) {
 		console.log('constructing view');
 		super(leaf);
+		this.guid = Math.random().toString(36).substring(2);
 	}
+
+	getViewData(): string {
+		console.log(`getViewData ${this.guid}`);
+		const { saveData } = getContextualStores(this.guid);
+		return get(saveData);
+	}
+	setViewData(data: string, clear: boolean): void {
+		console.log("setViewData");
+		console.log(data, clear);
+		const { loadChatPoints } = getContextualStores(this.guid);
+		loadChatPoints(data);
+	}
+	clear(): void {
+		console.log("clear Method not implemented.");
+	}
+
+	component!: Component;
+	file: TFile | null = null;
+
+	guid: string;
 
 	setFile(file: TFile) {
 		this.file = file;
@@ -30,19 +51,20 @@ export class ExampleView extends ItemView {
 
 	async onOpen() {
 		console.log('onOpen');
-		const guid = '1234'; //this.leaf.getViewState().state?.file?.basename;
 		this.component = new Component({
 			target: this.contentEl,
-			props: {
-				guid: guid
-			}
+			props: { guid: this.guid, viewParent: this },
 		});
-		this.file = this.leaf.getViewState().state?.file;
 	}
 
 	async onClose() {
 		if (this?.component?.$destroy) {
 			this.component.$destroy();
 		}
+	}
+
+	async onLoadFile (file: TFile) {
+		console.log('onLoadFile', file);
+		return await super.onLoadFile(file);
 	}
 }

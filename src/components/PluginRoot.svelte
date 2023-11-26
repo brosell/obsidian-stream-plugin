@@ -4,8 +4,16 @@
   import ChatInput from './ChatInput.svelte';
   import { onMount } from 'svelte';
 
+  import { getContextualStores } from '../stores/contextual-stores';
+
   let chatInputComponent: ChatInput;
-  export let guid: string; // = Math.random().toString(36).substring(2);
+  export let guid: string;
+  export let viewParent: any;
+
+  const { chatPoints } = getContextualStores(guid);
+  chatPoints.subscribe((chatPoints) => {
+    viewParent.requestSave();
+  });
 
   function adjustTextareaHeight(): void {
     const minHeight = 100;

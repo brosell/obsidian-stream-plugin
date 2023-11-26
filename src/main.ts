@@ -49,6 +49,7 @@ export default class ObsidianNoteConnections extends Plugin {
 	}
 
 	handleFileOpen = async (file: TFile | null): Promise<void> => {
+		console.log('handle file open', file);
 		if (!file) return;
 		const fileContent = await this.app.vault.read(file);
 		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
@@ -58,7 +59,10 @@ export default class ObsidianNoteConnections extends Plugin {
 		}
 	};
 
+	
+
 	openCustomView(file: TFile) {
+		console.log('opening custom view');
 		let leaf = this.app.workspace.getLeaf(false);
 		if (leaf.view.getViewType() !== VIEW_TYPE_EXAMPLE) {
 				leaf.setViewState({
