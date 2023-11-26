@@ -174,13 +174,16 @@ stream: basic
 
   // Bus
   const bus = writable<any>(null);
+  bus.subscribe((message: Message) => {
+    console.log('bus message', message);
+  });
+  
   const sendMessage = (event: BusEvent, context: MessageContext, details: any = {}) => {
     bus.set({event, context, details});
   }
 
   const subscribeToBus = (guid: string, handlers: Record<string, (m: Message) => void>) => {
     bus.subscribe( (message: Message) => {
-      console.log(message || 'no message');
       if (message && message.context.guid === guid && handlers[message.event]) {
         handlers[message.event](message);
       }
