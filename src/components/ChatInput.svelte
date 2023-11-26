@@ -1,12 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { BusEvent, Context, sendMessage } from '../services/bus';
-  import { userPromptInput, readyForInput } from '../stores/stores';
+  import { BusEvent, Context } from '../services/bus';
   import { isSlashCommandFormat } from '../commands/slash-functions';
+  import { getContextualStores } from '../stores/contextual-stores';
    
   export let adjustTextareaHeight: () => void;
 
-
+  export let guid: string;
+  const { userPromptInput, readyForInput, sendMessage } = getContextualStores(guid);
+  
   let textArea: HTMLTextAreaElement;
 
   onMount(() => {
@@ -22,10 +24,10 @@
       const trimmed = $userPromptInput.trim();
       if ($readyForInput) {
         if (isSlashCommandFormat(trimmed)) {
-          sendMessage(BusEvent.SlashFunction, Context.Null, { content: trimmed});
+          sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: trimmed});
         }
         else {
-          sendMessage(BusEvent.ChatIntent, Context.Null, { content: trimmed});
+          sendMessage(BusEvent.ChatIntent, { ...Context.Null, guid } , { content: trimmed});
         }
         userPromptInput.set('');
       }

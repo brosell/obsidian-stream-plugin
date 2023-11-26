@@ -1,8 +1,17 @@
 <script lang="ts">
-  import { activeChatPointId, treeDisplay } from "../stores/stores";
+  import { getContextualStores } from "../stores/contextual-stores";
   import ChatPointCard from "./ChatPointCard.svelte";
-  import { activeChatThread } from '../stores/stores'
-  import { forkChatPoint } from "../models/thread-repo";
+  import type { ChatPoint } from "../models/chat-point";
+
+  export let guid: string;
+
+  const { activeChatThread, activeChatPointId, treeDisplay } = getContextualStores(guid);
+
+  // 
+  //       onBranch={() => activeChatPointId.set(chatPointDisplay.id)}
+  //       onFork={() => forkChatPoint(chatPointDisplay.id)}
+
+
 </script>
 
 <div class="nowrap">
@@ -11,9 +20,7 @@
       <ChatPointCard 
         header={`${chatPointDisplay.id}: ${chatPointDisplay.summary??''}`} 
         text={chatPointDisplay.displayValue}
-        isActive={!!$activeChatThread.find(cp => cp.id === chatPointDisplay.id)}
-        onBranch={() => activeChatPointId.set(chatPointDisplay.id)}
-        onFork={() => forkChatPoint(chatPointDisplay.id)}
+        isActive={!!$activeChatThread.some(cp => cp.id === chatPointDisplay.id)}
       />
     </div>
   {/each}
