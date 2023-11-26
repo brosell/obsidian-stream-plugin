@@ -4,7 +4,7 @@ import { ChatRole, type ChatPoint, type Completion } from "../models/chat-point"
 import { getContextualStores } from "../stores/contextual-stores";
 
 export const subscribeSlashCommandsForContext = (guid: string) => {
-  const { activeChatPointId, activeChatPoint, activeChatThread, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, deriveThread, updateChatPoint, subscribeToBus, chatPoints, userPromptInput } = getContextualStores(guid);
+  const { activeChatPointId, activeChatPoint, activeChatThread, forkChatPoint, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, deriveThread, updateChatPoint, subscribeToBus, chatPoints, userPromptInput } = getContextualStores(guid);
   
   const slashFunctions: Record<string, (c: string[]) => void> = {
     setThread: (args: string[]) => {
@@ -15,10 +15,16 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
         activeChatPointId.set(id);
       }
     },
+    fork: (args: string[]) => {
+      const [ chatPointId ] = args;
+      
+      forkChatPoint(chatPointId);
+    },
     addSystemPrompt: (args: string[]) => {
       const prompt = args.join(','); // just in case the prompt has commas which would have been used to split
-      const pid = get(activeChatPointId);
-      const cp = addNewChatPoint(prompt, pid, ChatRole.SYSTEM);
+      const previousId = get(activeChatPointId) || '';
+      
+      const cp = addNewChatPoint(prompt, previousId, ChatRole.SYSTEM);
       activeChatPointId.set(cp.id);
     },
     deleteNode: (args: string[]) => {

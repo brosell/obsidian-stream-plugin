@@ -6,6 +6,7 @@ import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
 
+
 export interface ContextualStores {
   bus: Writable<BusEvent>,
   chatPoints: Writable<ChatPoint[]>,
@@ -16,8 +17,17 @@ export interface ContextualStores {
   treeDisplay: Readable<ChatPointDisplay[]>,
   userPromptInput: Writable<string>,
   markdown: Writable<string>,
-  renderedHtml: Readable<string>
+  renderedHtml: Readable<string>,
+  addNewChatPoint: (content: string, previousId?: string, role?: ChatRole) => ChatPoint,
+  getChatPoint: (id: string) => ChatPoint | undefined,
+  forkChatPoint: (chatPointId: string) => void,
+  updateChatPoint: (chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint) => ChatPoint,
+  deriveThread: (leafId: string) => ChatPoint[],
+  deleteChatPointAndDescendants: (idToDelete: string) => void,
+  sendMessage: (event: BusEvent, context?: MessageContext, details?: any) => void,
+  subscribeToBus: (event: string, handler: Record<string, (m: Message) => void>) => void,
 }
+
 
 const storeInstances: Map<string, any> = new Map();
 export const getContextualStores = (guid: string): ContextualStores => {
@@ -41,7 +51,7 @@ const createDataStores = (guid: string) => {
   const getChatPoint = (id: string): ChatPoint | undefined => get(chatPoints).find(cp => cp.id === id);
 
   const forkChatPoint = (chatPointId: string) => {
-    const source = getChatPoint(chatPointId);
+    const source = getChatPoint(chatPointId) || get(activeChatPoint);
     if (!source) {
       throw new Error('tried to fork nonexistent ChatPoint');
     }
