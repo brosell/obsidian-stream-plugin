@@ -1,5 +1,10 @@
 <script lang="ts">
-    import { renderedHtml } from '../stores/render-markdown';
+  import { getContextualStores } from "../stores/contextual-stores";
+
+
+    export let guid: string;
+
+    const { renderedHtml } = getContextualStores(guid);
 </script>
 
 <div class="flex-1 overflow-auto p-4">

@@ -6,12 +6,16 @@ import { ChatRole, chatPointToHtml, type ChatPoint } from '../models/chat-point'
 import { prepareChatPointsForDisplay } from '../services/nested-list-builder';
 import type { BusEvent, Message, MessageContext } from '../services/bus';
 import { marked } from 'marked';
+import { subscribeForContext } from '../commands/commands';
+import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
 
 
 const storeInstances: Map<string, any> = new Map();
 export const getContextualStores = (guid: string) => {
   if (!storeInstances.has(guid)) {
     storeInstances.set(guid, createDataStores());
+    subscribeForContext(guid);
+    subscribeSlashCommandsForContext(guid);
   }
   return storeInstances.get(guid);
 }
@@ -140,6 +144,7 @@ const createDataStores = () => {
     deriveThread,
     deleteChatPointAndDescendants,
     sendMessage,
+    subscribeToBus,
     bus,
     chatPoints,
     activeChatPointId,

@@ -3,7 +3,7 @@ import { BusEvent, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
 
-const subscribeSlashCommandsForContext = (guid: string) => {
+export const subscribeSlashCommandsForContext = (guid: string) => {
   const { activeChatPointId, activeChatPoint, activeChatThread, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, deriveThread, updateChatPoint, subscribeToBus, chatPoints, userPromptInput } = getContextualStores(guid);
   
   const slashFunctions: Record<string, (c: string[]) => void> = {

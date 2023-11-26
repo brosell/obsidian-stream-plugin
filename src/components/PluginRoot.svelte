@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
 
   let chatInputComponent: ChatInput;
+  let guid: string = '1234';
 
   function adjustTextareaHeight(): void {
     const minHeight = 100;
@@ -57,13 +58,13 @@
 
 <div class="flex h-full select-text">
   <div bind:this={leftPanel} class=" p-4 overflow-auto" style="width:50%;">
-    <TreeView />
+    <TreeView {guid} />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div id="resizer" on:mousedown={initResize}></div>
   <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
-    <MarkdownView />
-    <ChatInput bind:this={chatInputComponent} {adjustTextareaHeight} />
+    <MarkdownView {guid} />
+    <ChatInput {guid} bind:this={chatInputComponent} {adjustTextareaHeight} />
   </div>
 </div>
 

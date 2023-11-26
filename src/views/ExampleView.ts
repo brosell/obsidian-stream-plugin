@@ -14,7 +14,7 @@ export class ExampleView extends ItemView {
 	}
 
 	setFile(file: TFile) {
-		// this.file = file;
+		this.file = file;
 		console.log('file', file)
 		// Perform any additional setup required for displaying the file
 	}
