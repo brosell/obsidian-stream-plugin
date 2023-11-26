@@ -20,8 +20,8 @@ export class ExampleView extends TextFileView {
 		return get(saveData);
 	}
 	setViewData(data: string, clear: boolean): void {
-		console.log("setViewData");
-		console.log(data, clear);
+		console.log("setViewData", this.guid);
+		// console.log(data, clear);
 		const { loadChatPoints } = getContextualStores(this.guid);
 		loadChatPoints(data);
 	}

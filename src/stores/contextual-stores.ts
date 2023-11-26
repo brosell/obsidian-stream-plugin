@@ -41,14 +41,25 @@ export const getContextualStores = (guid: string): ContextualStores => {
   return storeInstances.get(guid);
 }
 
+
+
 const createDataStores = (guid: string) => {
+  const rootCP: ChatPoint = {previousId: '', id: '0', completions: [{ role: ChatRole.SYSTEM, content: 'You are a Helpful assistant for coding and other tasks' } ]};
 
   let g_id = 0;
 
   const loadChatPoints = (loadData: string): void => {
-    const sd = JSON.parse(loadData.substring(loadData.indexOf('{')));
+    let sd = { chatPoints: [rootCP], activeChatPointId: "0"};
+    activeChatPointId.set('');
+    const index = loadData.indexOf('{');
+    if (index !== -1) {
+      sd = JSON.parse(loadData.substring(index));
+    }
+     
     chatPoints.set(sd.chatPoints);
-    activeChatPointId.set(sd.activeChatPointId);
+    if (sd.activeChatPointId !== '') {
+      activeChatPointId.set(sd.activeChatPointId);
+    }
     g_id = Math.max(...sd.chatPoints.map((cp: { id: string; }) => parseInt(cp.id))) + 1;
   }
 
