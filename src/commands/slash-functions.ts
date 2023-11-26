@@ -10,7 +10,6 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
   
   const slashFunctions: Record<string, (c: string[]) => void> = {
     setThread: (args: string[]) => {
-      console.log('setting thread:', args[0]);
       const id = args[0];
       const cps = get(chatPoints) as ChatPoint[];
       if (cps.find((sp: ChatPoint) => sp.id === id)) {

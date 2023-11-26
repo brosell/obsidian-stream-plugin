@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
 
   let chatInputComponent: ChatInput;
-  let guid: string = Math.random().toString(36).substring(2);
+  export let guid: string; // = Math.random().toString(36).substring(2);
 
   function adjustTextareaHeight(): void {
     const minHeight = 100;

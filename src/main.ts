@@ -54,7 +54,6 @@ export default class ObsidianNoteConnections extends Plugin {
 		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 
 		if (frontmatter && frontmatter.stream === 'basic') {
-			console.log('opening stream file', file);
 			this.openCustomView(file);
 		}
 	};
@@ -62,7 +61,6 @@ export default class ObsidianNoteConnections extends Plugin {
 	openCustomView(file: TFile) {
 		let leaf = this.app.workspace.getLeaf(false);
 		if (leaf.view.getViewType() !== VIEW_TYPE_EXAMPLE) {
-			console.log('opening custom view');
 				leaf.setViewState({
 						type: VIEW_TYPE_EXAMPLE,
 						state: { file: file.path }
@@ -73,50 +71,7 @@ export default class ObsidianNoteConnections extends Plugin {
 				});
 				
 		}
-}
-
-// 	openCustomView(file: TFile) {
-//     // Check if there's already a leaf with the custom view for this file
-//     let leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE)
-//         .find(leaf => (leaf.view as ExampleView).file.path === file.path);
-    
-//     if (!leaf) {
-//         // Create a new leaf if one doesn't exist
-//         leaf = this.app.workspace.createLeafBySplit(this.app.workspace.activeLeaf!);
-//     }
-
-//     // Open the custom view in the leaf
-//     const view = new ExampleView(leaf, file);
-//     leaf.setViewState({
-//         type: VIEW_TYPE_EXAMPLE,
-//         state: { file: file.path }
-//     });
-//     // If needed, you can manually trigger the view to display the content
-//     view.leaf.open(view);
-// }
-
-	// openCustomView(file: TFile) {
-	// 	console.log('opening view?');
-	// 	const leaf = this.app.workspace.getLeaf(false);
-	// 	leaf.setViewState({
-	// 		type: VIEW_TYPE_EXAMPLE,
-	// 		state: { file: file.path }
-	// 	});
-
-	// 	leaf.openFile(file, { state: { view: VIEW_TYPE_EXAMPLE } });
-	// }
-
-	// toggleView(file: TFile) {
-	// 		const activeLeaf = this.app.workspace.activeLeaf!;
-	// 		if (activeLeaf.view.getViewType() === 'markdown') {
-	// 				this.openCustomView(file);
-	// 		} else {
-	// 				activeLeaf.setViewState({
-	// 						type: 'markdown',
-	// 						state: { file: file.path }
-	// 				});
-	// 		}
-	// }
+	}
 
 	toggleView(file: TFile) {
 		// Find the current active markdown view

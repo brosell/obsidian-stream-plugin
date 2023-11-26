@@ -30,8 +30,12 @@ export class ExampleView extends ItemView {
 
 	async onOpen() {
 		console.log('onOpen');
+		const guid = '1234'; //this.leaf.getViewState().state?.file?.basename;
 		this.component = new Component({
 			target: this.contentEl,
+			props: {
+				guid: guid
+			}
 		});
 		this.file = this.leaf.getViewState().state?.file;
 	}

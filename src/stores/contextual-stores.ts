@@ -78,7 +78,6 @@ const createDataStores = (guid: string) => {
   const deriveThread = (leafId: string): ChatPoint[] => {
     const answer = [] as ChatPoint[];
     if (!leafId) {
-      console.log(guid, 'no leaf?');
       return answer;
     }
 
@@ -151,8 +150,7 @@ const createDataStores = (guid: string) => {
 
   const subscribeToBus = (guid: string, handlers: Record<string, (m: Message) => void>) => {
     bus.subscribe( (message: Message) => {
-      
-      console.log(message?.event || 'no event', message?.context?.guid || 'no context', guid);
+      console.log(message || 'no message');
       if (message && message.context.guid === guid && handlers[message.event]) {
         handlers[message.event](message);
       }

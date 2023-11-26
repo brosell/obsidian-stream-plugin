@@ -11,10 +11,7 @@
   //       onBranch={() => activeChatPointId.set(chatPointDisplay.id)}
   //       onFork={() => forkChatPoint(chatPointDisplay.id)}
 
-  // const ct: ChatPoint[] = $activeChatThread;
-  activeChatThread.subscribe((newVal) => {
-    console.log('activeChatThread', newVal);
-  });
+
 </script>
 
 <div class="nowrap">
