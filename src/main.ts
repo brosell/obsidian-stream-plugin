@@ -23,26 +23,25 @@ export default class ObsidianNoteConnections extends Plugin {
 
 	async onload() {
 		this.registerView(VIEW_TYPE_EXAMPLE, (leaf: WorkspaceLeaf) => {
-			console.log('creating view', leaf)
-			return new ExampleView(leaf)
+			const v = new ExampleView(leaf);
+			return v;
 		});
 
 		this.registerEvent(this.app.workspace.on('file-open', this.handleFileOpen));
+
+		this.registerEvent(this.app.workspace.on('active-leaf-change', (l) => { console.log('leaf change', l)}));
+
 		(window as any).toggleMyPluginView = this.toggleView.bind(this);
 		this.addCommand({
       id: 'toggle-stream-view',
       name: 'Toggle between Stream and markdown mode',
-      checkCallback: (checking) => {
+      callback: () => {
 				const file = app.workspace.getActiveFile();
 				if (!file) {
 					return;
 				}
 				const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 				if (frontmatter && frontmatter.stream === 'basic') {
-					if (checking) {
-						return true;
-					}
-
 					this.toggleView(file)
 			 	}
 			},

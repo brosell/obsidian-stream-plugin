@@ -2,9 +2,6 @@ import { get, writable } from "svelte/store";
 import { type ChatPoint, ChatRole } from "./chat-point";
 import { activeChatPointId } from "../stores/stores";
 
-// export let chatPoints: ChatPoint[] = [];
-export const chatPoints = writable([] as ChatPoint[]);
-
 let g_id = 0;
 
 export const addNewChatPoint = (content: string, previousId: string = '', role: ChatRole = ChatRole.USER) => {

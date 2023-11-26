@@ -25,7 +25,6 @@ export class ExampleView extends ItemView {
 
 	getDisplayText() {
 		const title = this.file?.basename || 'wtf';
-		console.log('title', title);
 		return title;
 	}
 

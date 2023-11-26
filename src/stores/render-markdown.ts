@@ -1,15 +1,6 @@
 import { derived, get } from "svelte/store";
 import { marked } from 'marked';
 import { activeChatThread, readyForInput } from './stores';
-import type { ChatPoint } from "../models/chat-point";
-
-
-export const jsonMarkdown = derived(activeChatThread, t => `\`\`\`
-${JSON.stringify(t.flatMap(c => c.completions), null, 2)}
-\`\`\`
-`);
-
-
 
 export const markdown = derived(activeChatThread, t => {
   const rfi = get(readyForInput);
