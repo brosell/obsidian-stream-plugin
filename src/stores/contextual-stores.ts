@@ -1,26 +1,35 @@
-
-
-import { getContext } from 'svelte';
-import { writable, derived, get } from 'svelte/store';
+import { writable, derived, get, type Writable, type Readable } from 'svelte/store';
 import { ChatRole, chatPointToHtml, type ChatPoint } from '../models/chat-point';
-import { prepareChatPointsForDisplay } from '../services/nested-list-builder';
+import { prepareChatPointsForDisplay, type ChatPointDisplay } from '../services/nested-list-builder';
 import type { BusEvent, Message, MessageContext } from '../services/bus';
 import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
 
+export interface ContextualStores {
+  bus: Writable<BusEvent>,
+  chatPoints: Writable<ChatPoint[]>,
+  activeChatPointId: Writable<string | null>,
+  activeChatThread: Readable<ChatPoint[]>,
+  activeChatPoint: Readable<ChatPoint | undefined>,
+  readyForInput: Writable<boolean>,
+  treeDisplay: Readable<ChatPointDisplay[]>,
+  userPromptInput: Writable<string>,
+  markdown: Writable<string>,
+  renderedHtml: Readable<string>
+}
 
 const storeInstances: Map<string, any> = new Map();
-export const getContextualStores = (guid: string) => {
+export const getContextualStores = (guid: string): ContextualStores => {
   if (!storeInstances.has(guid)) {
-    storeInstances.set(guid, createDataStores());
+    storeInstances.set(guid, createDataStores(guid));
     subscribeForContext(guid);
     subscribeSlashCommandsForContext(guid);
   }
   return storeInstances.get(guid);
 }
 
-const createDataStores = () => {
+const createDataStores = (guid: string) => {
 
   let g_id = 0;
 
@@ -59,6 +68,7 @@ const createDataStores = () => {
   const deriveThread = (leafId: string): ChatPoint[] => {
     const answer = [] as ChatPoint[];
     if (!leafId) {
+      console.log(guid, 'no leaf?');
       return answer;
     }
 
@@ -76,6 +86,7 @@ const createDataStores = () => {
       }
       answer.unshift(node);
     }
+    console.log(guid, 'answer', answer.map(a => a.id));
     return answer;
   }
 
@@ -98,29 +109,29 @@ const createDataStores = () => {
     })
   }
 
-  const chatPoints = writable([] as ChatPoint[]);
-  const activeChatPointId = writable('');
-  const activeChatThread = derived(activeChatPointId, deriveThread);
-  const activeChatPoint = derived(activeChatPointId, id => get(chatPoints).find(cp => cp.id === id));
+  const chatPoints: Writable<ChatPoint[]> = writable([] as ChatPoint[]);
+  const activeChatPointId: Writable<string> = writable('');
+  const activeChatThread: Readable<ChatPoint[]> = derived(activeChatPointId, deriveThread);
+  const activeChatPoint: Readable<ChatPoint | undefined> = derived(activeChatPointId, id => get(chatPoints).find(cp => cp.id === id));
 
   // UI
-  const readyForInput = writable(true);
-  const treeDisplay = derived(chatPoints, (chatPoints) =>
-    prepareChatPointsForDisplay(chatPoints, (cp) => chatPointToHtml(cp))
+  const readyForInput: Writable<boolean> = writable(true);
+  const treeDisplay: Readable<ChatPointDisplay[]> = derived(chatPoints, (chatPoints: ChatPoint[]) =>
+    prepareChatPointsForDisplay(chatPoints, (cp: ChatPoint) => chatPointToHtml(cp))
   )
-  const userPromptInput = writable('');
+  const userPromptInput: Writable<string> = writable('');
 
-  const markdown = derived(activeChatThread, t => {
-    const rfi = get(readyForInput);
+  const markdown: Readable<string> = derived(activeChatThread, (t: ChatPoint[]) => {
+    const rfi: boolean = get(readyForInput);
   
-    const md = t.map(item => {
-      const completionsMarkdown = item.completions.map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
+    const md: string = t.map(item => {
+      const completionsMarkdown: string = item.completions.map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
       return `### ${item.id}\n${completionsMarkdown}`;
     }).join('\n\n');
     return `${md}\n\n---\n ${!rfi ? '==waiting for response...==' : ''}`;
   });
 
-  const renderedHtml = derived(markdown, markdown => marked(markdown));
+  const renderedHtml: Readable<string> = derived(markdown, (markdown: string) => marked(markdown));
 
   // Bus
   const bus = writable<any>(null);
@@ -130,7 +141,8 @@ const createDataStores = () => {
 
   const subscribeToBus = (guid: string, handlers: Record<string, (m: Message) => void>) => {
     bus.subscribe( (message: Message) => {
-      console.log("Bus Event context:", message?.context?.guid || 'huh?');
+      
+      console.log(message?.event || 'no event', message?.context?.guid || 'no context', guid);
       if (message && message.context.guid === guid && handlers[message.event]) {
         handlers[message.event](message);
       }
