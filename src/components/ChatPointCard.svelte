@@ -52,7 +52,7 @@
       padding: 4px;
       margin-bottom: 8px;
       min-width: 350px;
-      max-width: 350px;
+      /* max-width: 600px; */
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     }
     .active {
