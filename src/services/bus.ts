@@ -7,7 +7,7 @@ export enum BusEvent {
   SlashFunction = 'SlashFunction',
 }
 
-type MessageContext = {
+export type MessageContext = {
   referenceType: string;
   referenceId: string;
 };
