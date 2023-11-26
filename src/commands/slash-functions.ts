@@ -1,10 +1,12 @@
 import { get } from "svelte/store";
 import { BusEvent, type Message } from "../services/bus";
-import { ChatRole, type ChatPoint, type Completion } from "../models/chat-point";
+import { ChatRole, type ChatPoint, type Completion, chatPointToMarkdown } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
+import { AiInterface } from "../services/ai";
 
 export const subscribeSlashCommandsForContext = (guid: string) => {
   const { activeChatPointId, activeChatPoint, activeChatThread, forkChatPoint, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, deriveThread, updateChatPoint, subscribeToBus, chatPoints, userPromptInput } = getContextualStores(guid);
+  const AI = new AiInterface(100);
   
   const slashFunctions: Record<string, (c: string[]) => void> = {
     setThread: (args: string[]) => {
@@ -54,20 +56,20 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       activeChatPointId.set(curCP.previousId);
       setTimeout(() => userPromptInput.set(userPrompt));
     },
-    // summarize: async (args: string[]) => {
-    //   const cpId = args[0] || get(activeChatPointId);
-    //   const cp = getChatPoint(cpId);
-    //   if (!cp) {
-    //     throw new Error(`tried to summarize nonexistent ChatPoint with id: ${cpId}`);
-    //   }
-    //   const cpText = chatPointToMarkdown(cp);
-    //   const prompt = `Summarize the following exchange with 10 or fewer words. The summary must not excide 10 words
-    // ===
-    // ${cpText}`;
+    summarize: async (args: string[]) => {
+      const cpId = args[0] || get(activeChatPointId) || '';
+      const cp = getChatPoint(cpId);
+      if (!cp) {
+        throw new Error(`tried to summarize nonexistent ChatPoint with id: ${cpId}`);
+      }
+      const cpText = chatPointToMarkdown(cp);
+      const prompt = `Summarize the following exchange with 10 or fewer words. The summary must not excide 10 words
+    ===
+    ${cpText}`;
 
-    //   const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
-    //   updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
-    // },
+      const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
+      updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
+    },
     // summarizeThread: async (args: string[]) => {
     //   let [cpId, wordCount] = args;
     //   wordCount = wordCount || '100';
