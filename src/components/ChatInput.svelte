@@ -24,7 +24,7 @@
       const trimmed = $userPromptInput.trim();
       if ($readyForInput) {
         if (isSlashCommandFormat(trimmed)) {
-          sendMessage(BusEvent.SlashFunction, Context.Null, { content: trimmed});
+          sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: trimmed});
         }
         else {
           sendMessage(BusEvent.ChatIntent, { ...Context.Null, guid } , { content: trimmed});
