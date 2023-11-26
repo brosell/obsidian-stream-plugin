@@ -5,6 +5,7 @@ import { writable, derived, get } from 'svelte/store';
 import { ChatRole, chatPointToHtml, type ChatPoint } from '../models/chat-point';
 import { prepareChatPointsForDisplay } from '../services/nested-list-builder';
 import type { BusEvent, Message, MessageContext } from '../services/bus';
+import { marked } from 'marked';
 
 
 const storeInstances: Map<string, any> = new Map();
@@ -105,6 +106,19 @@ const createDataStores = () => {
   )
   const userPromptInput = writable('');
 
+  const markdown = derived(activeChatThread, t => {
+    const rfi = get(readyForInput);
+  
+    const md = t.map(item => {
+      const completionsMarkdown = item.completions.map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
+      return `### ${item.id}\n${completionsMarkdown}`;
+    }).join('\n\n');
+    return `${md}\n\n---\n ${!rfi ? '==waiting for response...==' : ''}`;
+  });
+
+  const renderedHtml = derived(markdown, markdown => marked(markdown));
+
+  // Bus
   const bus = writable<any>(null);
   const sendMessage = (event: BusEvent, context: MessageContext, details: any = {}) => {
     bus.set({event, context, details});
@@ -133,6 +147,8 @@ const createDataStores = () => {
     activeChatPoint,
     readyForInput,
     treeDisplay,
-    userPromptInput
+    userPromptInput,
+    markdown,
+    renderedHtml,
   }
 }

@@ -1,5 +1,4 @@
 import { marked } from "marked";
-import { deriveThread } from "./thread-repo";
 
 export enum ChatRole {
   SYSTEM = 'SYSTEM',
@@ -27,7 +26,4 @@ export const chatPointToHtml = (item: ChatPoint) => {
   return marked(chatPointToMarkdown(item));
 }
 
-export const threadToMarkdown = (threadLeafId: string) => {
-  const thread = deriveThread(threadLeafId);
-  return thread.map(cp => `${chatPointToMarkdown(cp)}\n\n`);
-}
+
