@@ -3,7 +3,8 @@ import OpenAI from "openai";
 import { OPENAI_API_KEY } from "../oai-api-key";
 import type { Completion } from "../models/chat-point";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions.mjs";
-import { BusEvent, sendMessage } from "./bus";
+import { BusEvent } from "./bus";
+import { getContextualStores } from "../stores/contextual-stores";
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
@@ -17,6 +18,7 @@ export class AiInterface {
   get count() { return this._count; }
 
   async prompt(completions: Completion[], context: any): Promise<string> {
+    const { sendMessage } = getContextualStores(context.guid);
     if (this.count > this.safetyNet) {
       throw "out of calls";
     }

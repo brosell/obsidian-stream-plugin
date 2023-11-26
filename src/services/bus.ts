@@ -8,12 +8,13 @@ export enum BusEvent {
 }
 
 export type MessageContext = {
+  guid: string;
   referenceType: string;
   referenceId: string;
 };
 
 export const Context: Record<string, MessageContext> = {
-  Null: { referenceId: 'null', referenceType: 'Null'}
+  Null: { guid: 'null', referenceId: 'null', referenceType: 'Null'}
 }
 
 export interface Message {
@@ -22,10 +23,10 @@ export interface Message {
   details: any
 }
 
-export const bus = writable<Message>();
+// export const bus = writable<Message>();
 
-export const sendMessage = (event: BusEvent, context: MessageContext, details: any = {}) => {
-  bus.set({event, context, details});
-}
+// export const sendMessage = (event: BusEvent, context: MessageContext, details: any = {}) => {
+//   bus.set({event, context, details});
+// }
 
-bus.subscribe(message => console.log("Bus Event:", message) ); // just a logger
+// bus.subscribe(message => console.log("Bus Event:", message) ); // just a logger

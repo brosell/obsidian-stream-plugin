@@ -106,7 +106,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
     },
   };
 
-  subscribeToBus(commands)
+  subscribeToBus(guid, commands)
 }
 
 export function isSlashCommandFormat(input: string): boolean {

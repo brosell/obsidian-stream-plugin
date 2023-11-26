@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { BusEvent, type Message, bus, sendMessage } from "../services/bus";
+import { BusEvent, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
@@ -7,14 +7,14 @@ import { AiInterface } from "../services/ai";
 export const subscribeForContext = (guid: string) => {
   const AI = new AiInterface(100);
   
-  const { activeChatPointId, addNewChatPoint, deriveThread, updateChatPoint, subscribeToBus, readyForInput } = getContextualStores(guid);
+  const { sendMessage, activeChatPointId, addNewChatPoint, deriveThread, updateChatPoint, subscribeToBus, readyForInput } = getContextualStores(guid);
   const handlers = {
     [BusEvent.ChatIntent]: (message: Message) => {
       const { details, context } = message;
       readyForInput.set(false);
       const cp = addNewChatPoint(details.content, get(activeChatPointId));
       activeChatPointId.set(cp.id);
-      sendMessage(BusEvent.UserPromptAvailable, { referenceType: 'ChatPoint', referenceId: cp.id }, details.content);
+      sendMessage(BusEvent.UserPromptAvailable, { guid, referenceType: 'ChatPoint', referenceId: cp.id }, details.content);
     },
 
     [BusEvent.UserPromptAvailable]: (message: Message) => {
@@ -42,7 +42,7 @@ export const subscribeForContext = (guid: string) => {
     }
   }
 
-  subscribeToBus(handlers);
+  subscribeToBus(guid, handlers);
 }
 
 

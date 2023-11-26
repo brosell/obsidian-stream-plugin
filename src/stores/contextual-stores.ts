@@ -128,9 +128,10 @@ const createDataStores = () => {
     bus.set({event, context, details});
   }
 
-  const subscribeToBus = (handlers: Record<string, (m: Message) => void>) => {
+  const subscribeToBus = (guid: string, handlers: Record<string, (m: Message) => void>) => {
     bus.subscribe( (message: Message) => {
-      if (message && handlers[message.event]) {
+      console.log("Bus Event context:", message?.context?.guid || 'huh?');
+      if (message && message.context.guid === guid && handlers[message.event]) {
         handlers[message.event](message);
       }
     });
