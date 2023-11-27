@@ -1,12 +1,12 @@
-import { ItemView, TFile, TextFileView, WorkspaceLeaf } from "obsidian";
+import { ItemView, TFile, TextFileView, WorkspaceLeaf } from 'obsidian';
 
-import Component from "../components/PluginRoot.svelte";
-import { getContextualStores } from "../stores/contextual-stores";
-import { get } from "svelte/store";
+import Component from '../components/PluginRoot.svelte';
+import { getContextualStores } from '../stores/contextual-stores';
+import { get } from 'svelte/store';
 
-export const VIEW_TYPE_EXAMPLE = "example-view";
+export const STREAM_VIEW_TYPE = 'stream-view';
 
-export class ExampleView extends TextFileView {
+export class StreamView extends TextFileView {
 	
 	constructor(leaf: WorkspaceLeaf) {
 		console.log('constructing view');
@@ -41,7 +41,7 @@ export class ExampleView extends TextFileView {
 	}
 
 	getViewType() {
-		return VIEW_TYPE_EXAMPLE;
+		return STREAM_VIEW_TYPE;
 	}
 
 	getDisplayText() {

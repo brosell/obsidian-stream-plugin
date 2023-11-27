@@ -1,5 +1,5 @@
 import { MarkdownView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
-import { ExampleView, VIEW_TYPE_EXAMPLE } from "./views/ExampleView";
+import { StreamView, STREAM_VIEW_TYPE } from "./views/ExampleView";
 import "virtual:uno.css";
 
 interface ObsidianNoteConnectionsSettings {
@@ -22,8 +22,8 @@ export default class ObsidianNoteConnections extends Plugin {
 	}
 
 	async onload() {
-		this.registerView(VIEW_TYPE_EXAMPLE, (leaf: WorkspaceLeaf) => {
-			const v = new ExampleView(leaf);
+		this.registerView(STREAM_VIEW_TYPE, (leaf: WorkspaceLeaf) => {
+			const v = new StreamView(leaf);
 			return v;
 		});
 
@@ -64,12 +64,12 @@ export default class ObsidianNoteConnections extends Plugin {
 	openCustomView(file: TFile) {
 		console.log('opening custom view');
 		let leaf = this.app.workspace.getLeaf(false);
-		if (leaf.view.getViewType() !== VIEW_TYPE_EXAMPLE) {
+		if (leaf.view.getViewType() !== STREAM_VIEW_TYPE) {
 				leaf.setViewState({
-						type: VIEW_TYPE_EXAMPLE,
+						type: STREAM_VIEW_TYPE,
 						state: { file: file.path }
 				}).then(() => {
-						const view = (leaf.view as ExampleView);
+						const view = (leaf.view as StreamView);
 						view.setFile(file);
 						// leaf.openFile(file);
 				});
