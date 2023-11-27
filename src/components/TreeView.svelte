@@ -11,18 +11,7 @@
   // 
   //       onBranch={() => activeChatPointId.set(chatPointDisplay.id)}
   //       onFork={() => forkChatPoint(chatPointDisplay.id)}
-  let chatInputComponent: ChatInput;
 
-  function adjustTextareaHeight(): void {
-    const minHeight = 100;
-    const textAreaElement: HTMLTextAreaElement = chatInputComponent.getTextAreaElement();
-    const maxHeight: number = window.innerHeight / 3;
-    const newHeight: number = Math.max(
-      Math.min(textAreaElement.scrollHeight, maxHeight),
-      minHeight);
-    
-    textAreaElement.style.height = `${newHeight}px`;
-  }
 </script>
 
 <div class="nowrap">
@@ -35,7 +24,7 @@
         isActive={!!$activeChatThread.some(cp => cp.id === chatPointDisplay.id)}
       />
       {#if $activeChatPointId === chatPointDisplay.id}
-          <ChatInput {guid} bind:this={chatInputComponent} {adjustTextareaHeight} />
+          <ChatInput {guid} />
       {/if}
     </div>
   {/each}

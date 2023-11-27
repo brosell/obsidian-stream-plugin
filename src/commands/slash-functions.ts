@@ -35,7 +35,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       }
       const thread = get(activeChatThread) as ChatPoint[];
       const currentThreadIds = [...thread.map((cp: ChatPoint) => cp.id)].reverse();
-      activeChatPointId.set('root');
+      activeChatPointId.set('');
       deleteChatPointAndDescendants(idToDelete);
 
       for (let i = 0, [cpId] = currentThreadIds[i]; i < currentThreadIds.length; i++) {

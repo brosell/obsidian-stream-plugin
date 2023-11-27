@@ -6,7 +6,6 @@
 
   import { getContextualStores } from '../stores/contextual-stores';
 
-  let chatInputComponent: ChatInput;
   export let guid: string;
   export let viewParent: any;
 
@@ -15,30 +14,14 @@
     viewParent.requestSave();
   });
 
-  function adjustTextareaHeight(): void {
-    const minHeight = 100;
-    const textAreaElement: HTMLTextAreaElement = chatInputComponent.getTextAreaElement();
-    const maxHeight: number = window.innerHeight / 3;
-    const newHeight: number = Math.max(
-      Math.min(textAreaElement.scrollHeight, maxHeight),
-      minHeight);
-    
-    textAreaElement.style.height = `${newHeight}px`;
-  }
+  
 
   let rightDiv: any;
   let rightDivInitialWidth: string;
   
   onMount(() => {
     rightDivInitialWidth = `${rightDiv.offsetWidth}px`;
-    const resizeObserver: ResizeObserver = new ResizeObserver(() => {
-      adjustTextareaHeight();
     });
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  });
 
   let startX: number;
   let startWidth: number;
@@ -72,7 +55,7 @@
   <div id="resizer" on:mousedown={initResize}></div>
   <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
     <MarkdownView {guid} />
-    <ChatInput {guid} bind:this={chatInputComponent} {adjustTextareaHeight} />
+    <ChatInput {guid} />
   </div>
 </div>
 

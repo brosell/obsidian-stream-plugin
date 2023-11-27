@@ -4,7 +4,6 @@
   import { isSlashCommandFormat } from '../commands/slash-functions';
   import { getContextualStores } from '../stores/contextual-stores';
    
-  export let adjustTextareaHeight: () => void;
 
   export let guid: string;
   const { userPromptInput, readyForInput, sendMessage } = getContextualStores(guid);
@@ -15,9 +14,24 @@
     adjustTextareaHeight();
   });
 
+  function adjustTextareaHeight(): void {
+    const minHeight = 100;
+    const textAreaElement: HTMLTextAreaElement = textArea;
+    if (textArea) {
+    const maxHeight: number = window.innerHeight / 3;
+    const newHeight: number = Math.max(
+      Math.min(textAreaElement.scrollHeight, maxHeight),
+      minHeight);
+    
+    textAreaElement.style.height = `${newHeight}px`;
+    }
+  }
+
   function callAdjustTextareaHeight(): void {
     adjustTextareaHeight();
   }
+
+  
 
   function handleKeyPress(e: KeyboardEvent): void {
     if (e.key === "Enter" && e.shiftKey) {
