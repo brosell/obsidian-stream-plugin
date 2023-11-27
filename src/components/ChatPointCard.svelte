@@ -1,25 +1,30 @@
-<script>
-  import { createEventDispatcher } from 'svelte';
+<script lang='ts'>
+  import { getContextualStores } from "../stores/contextual-stores";
+  import { BusEvent, Context } from '../services/bus';
 
-  const dispatch = createEventDispatcher();
-  
   export let header = 'header';
   export let text = 'Default Card Text';
   export let isActive = false;
+  export let chatPointId: string;
+  export let guid: string;
+  
+  const {sendMessage} = getContextualStores(guid);
   
   export let onBranch = () => {
     // Branch action
-    console.log('branch');
+    sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/setThread(${chatPointId})`});
   };
 
   export let onFork = () => {
     // Fork action
-    console.log('fork');
+    sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/fork(${chatPointId})`});
   };
 
   export let onSummarize = () => {
     // Summarize action
     console.log('summarize');
+    sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${chatPointId})`});
+
   };
 
 </script>
