@@ -5,7 +5,7 @@ import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
 
 export const subscribeForContext = (guid: string) => {
-  const AI = new AiInterface(100);
+  const AI = new AiInterface(100, 'gpt-4-1106-preview');
   
   const { sendMessage, activeChatPointId, addNewChatPoint, deriveThread, updateChatPoint, subscribeToBus, readyForInput } = getContextualStores(guid);
   const handlers = {

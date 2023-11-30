@@ -165,7 +165,7 @@ const createDataStores = (guid: string) => {
   const saveData: Readable<string> = derived(chatPoints, (chatPoints: ChatPoint[]) => {
     const yaml = `---
 stream: basic
----\n\n`;
+---\n\n` + "```\n";
 
     const sd = {chatPoints, activeChatPointId: get(activeChatPointId)};
     const json = JSON.stringify(sd, null, 2);

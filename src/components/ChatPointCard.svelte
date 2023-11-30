@@ -7,6 +7,8 @@
   export let isActive = false;
   export let chatPointId: string;
   export let guid: string;
+
+  const open = isActive && text.indexOf('SYSTEM') === -1;
   
   const {sendMessage} = getContextualStores(guid);
   
@@ -30,7 +32,7 @@
 </script>
 
   <div class="card {isActive?'active':''}">
-    <details open={isActive}>
+    <details open={open}>
       <summary>
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
       </summary>
@@ -58,10 +60,12 @@
       margin-bottom: 8px;
       min-width: 350px;
       /* max-width: 600px; */
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); */
     }
     .active {
-      background-color: darkblue;
+      background-color: beige;
+      color: #000000d6;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     }
     .icon-row {
       display: flex;
