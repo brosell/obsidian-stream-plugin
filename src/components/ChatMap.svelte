@@ -121,6 +121,6 @@
 	svg {
 		transform: rotate(90deg);
 		width: 150%; 
-		height: 100%;
+		height: 90%;
 	}
 </style>
