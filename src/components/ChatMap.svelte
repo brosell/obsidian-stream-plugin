@@ -89,7 +89,7 @@
     mm =
       '<svg id="markmap" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="' +
       mindmap.className["baseVal"] +
-      '" style="width: 100%; height: 983px;">' +
+      // '" style="width: 100%; height: 983px;">' +
       mm +
       "</svg>";
     return mm;
@@ -106,21 +106,21 @@
   }
 </script>
 
-<div>
-  {#if show}
-    <textarea bind:value rows="20" cols="50"></textarea>
-  {/if}
   <svg
     id="markmap"
     bind:this={mindmap}
-    style="width: 100%; height: 983px"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"
   ></svg>
-</div>
 
 <style>
   div {
     display: flex;
   }
+
+	svg {
+		transform: rotate(90deg);
+		width: 150%; 
+		height: 100%;
+	}
 </style>
