@@ -68,6 +68,7 @@ const createDataStores = (guid: string) => {
     chatPoints.update(arr => [...arr, child]);
     return child;
   }
+  
   const getChatPoint = (id: string): ChatPoint | undefined => get(chatPoints).find(cp => cp.id === id);
 
   const forkChatPoint = (chatPointId: string) => {
