@@ -1,14 +1,14 @@
 import { writable, derived, get, type Writable, type Readable } from 'svelte/store';
 import { ChatRole, chatPointToHtml, type ChatPoint } from '../models/chat-point';
 import { prepareChatPointsForDisplay, type ChatPointDisplay } from '../services/nested-list-builder';
-import type { BusEvent, Message, MessageContext } from '../services/bus';
+import { NoopMeesage, type BusEvent, type Message, type MessageContext } from '../services/bus';
 import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
 
 
 export interface ContextualStores {
-  bus: Writable<BusEvent>,
+  bus: Writable<Message>,
   chatPoints: Writable<ChatPoint[]>,
   activeChatPointId: Writable<string | null>,
   activeChatThread: Readable<ChatPoint[]>,
@@ -174,7 +174,7 @@ stream: basic
   });
 
   // Bus
-  const bus = writable<any>(null);
+  const bus = writable<Message>(NoopMeesage);
   bus.subscribe((message: Message) => {
     console.log('bus message', message);
   });

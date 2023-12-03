@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 
 export enum BusEvent {
+  Noop = 'Noop',
   ChatIntent = 'ChatIntent',
   UserPromptAvailable = 'UserPromptReady',
   AIResponseAvailable = 'AIResponseReady',
@@ -21,6 +22,12 @@ export interface Message {
   event: BusEvent,
   context: MessageContext,
   details: any
+}
+
+export const NoopMeesage: Message = {
+  event: BusEvent.Noop,
+  context: Context.Null,
+  details: {}
 }
 
 // export const bus = writable<Message>();

@@ -1,14 +1,26 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { BusEvent, Context } from '../services/bus';
+  import { BusEvent, Context, type Message } from '../services/bus';
   import { isSlashCommandFormat } from '../commands/slash-functions';
   import { getContextualStores } from '../stores/contextual-stores';
    
 
   export let guid: string;
-  const { userPromptInput, readyForInput, sendMessage } = getContextualStores(guid);
+  const { userPromptInput, readyForInput, sendMessage, bus } = getContextualStores(guid);
   
   let textArea: HTMLTextAreaElement;
+
+  bus.subscribe(message => {
+    if (message.event === BusEvent.SlashFunction) {
+      const el = getTextAreaElement()
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView();
+          el.focus();
+        },100);
+      }
+    }
+  });
 
   onMount(() => {
     adjustTextareaHeight();

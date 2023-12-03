@@ -10,11 +10,13 @@
   export let guid: string;
   export let viewParent: any;
 
-  const { chatPoints } = getContextualStores(guid);
-  chatPoints.subscribe((chatPoints) => {
+  const { chatPoints, activeChatPointId } = getContextualStores(guid);
+  chatPoints.subscribe(_ => {
     viewParent.requestSave();
   });
-
+  activeChatPointId.subscribe(_ => {
+    viewParent.requestSave();
+  });
   
 
   let rightDiv: any;
