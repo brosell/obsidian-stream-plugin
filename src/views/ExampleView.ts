@@ -3,6 +3,7 @@ import { ItemView, TFile, TextFileView, WorkspaceLeaf } from 'obsidian';
 import Component from '../components/PluginRoot.svelte';
 import { getContextualStores } from '../stores/contextual-stores';
 import { get } from 'svelte/store';
+import { BusEvent, Context } from '../services/bus';
 
 export const STREAM_VIEW_TYPE = 'stream-view';
 
@@ -68,3 +69,12 @@ export class StreamView extends TextFileView {
 		return await super.onLoadFile(file);
 	}
 }
+
+
+(window as any).chat_map_activate = (guid: string, id: string) => {
+	const { sendMessage } = getContextualStores(guid); 
+	console.log(`activate ${id}`);
+	sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, {content: `/setThread(${id})` } );
+}
+
+

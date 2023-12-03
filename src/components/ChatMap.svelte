@@ -31,15 +31,9 @@
 		return lines.join('\n');
 	}
 
-	function activate(id: string) {
-		console.log(`activate ${id}`);
-		sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, {content: `/setThread(${id})` } );
-	}
-
-	(window as any).chat_map_activate = activate;
-
+	
   $: value = $treeDisplay.reduce((md, item ) => {
-		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span onclick="chat_map_activate('${item.id}')">${wrapText((item.summary || ''), 30) || 'no summary'}</span>\n`;
+		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.summary || ''), 30) || 'no summary'}</span>\n`;
 	}, "\n");
 
   let mindmap: SVGSVGElement;
