@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, afterUpdate } from 'svelte';
   import { BusEvent, Context, type Message } from '../services/bus';
   import { isSlashCommandFormat } from '../commands/slash-functions';
   import { getContextualStores } from '../stores/contextual-stores';
@@ -10,20 +10,18 @@
   
   let textArea: HTMLTextAreaElement;
 
-  bus.subscribe(message => {
-    if (message.event === BusEvent.SlashFunction) {
-      const el = getTextAreaElement()
+  onMount(() => {
+    adjustTextareaHeight();
+  });
+
+  afterUpdate(() => {
+    const el = getTextAreaElement()
       if (el) {
         setTimeout(() => {
-          el.scrollIntoView();
+          el.scrollIntoView({ behavior: 'smooth', block: 'end' });
           el.focus();
         },100);
       }
-    }
-  });
-
-  onMount(() => {
-    adjustTextareaHeight();
   });
 
   function adjustTextareaHeight(): void {
