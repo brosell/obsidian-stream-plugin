@@ -31,11 +31,10 @@
 	}
 
   $: value = $treeDisplay.reduce((md, item ) => {
-		console.log("item", item);
 		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - ${wrapText((item.summary || ''), 30) || 'no summary'}` + "\n";
 	}, "\n");
 
-  let mindmap: any;
+  let mindmap: SVGSVGElement;
   let linkSVG: any;
   let show = false;
   
@@ -55,9 +54,10 @@
 
   $: markdown = replaceMarkdown(
     YAML.parse(value, { separator: "\n---\n" })._content
-  );
+  ) || '# nada';
 
   afterUpdate(() => {
+		console.log("afterUpdate");
     const transformer = new Transformer();
 
     const { root, features } = transformer.transform(markdown);
@@ -77,8 +77,11 @@
       paddingX: 15, // 8
     };
     mindmap.innerHTML = "";
-    Markmap.create("#markmap", options, root);
-    linkSVG = makeTextFile(createSVG(mindmap));
+
+		setTimeout(() => {
+			Markmap.create("#markmap", options, root);
+			linkSVG = makeTextFile(createSVG(mindmap));
+		});
   });
 
   
@@ -114,13 +117,8 @@
   ></svg>
 
 <style>
-  div {
-    display: flex;
-  }
-
-	svg {
-		transform: rotate(90deg);
-		width: 150%; 
-		height: 90%;
+	#markmap {
+		width: 100%;
+		height: 100%;
 	}
 </style>
