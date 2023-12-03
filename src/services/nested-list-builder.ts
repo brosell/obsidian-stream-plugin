@@ -1,4 +1,5 @@
 import type { ChatPoint } from "../models/chat-point";
+import { errorBus } from "./bus";
 
 type Formatter<T> = (item: T) => string;
 type IdFn<T> = (item: T) => string;
@@ -66,7 +67,7 @@ export function prepareChatPointsForDisplay(
         current = chatPointMap.get(current.previousId)!;
         depth++;
       } else {
-        throw new Error('Invalid previousId reference found');
+        errorBus.set(`Invalid previousId reference found: ${current.previousId}`);
       }
     }
     return depth;
@@ -93,7 +94,8 @@ export function prepareChatPointsForDisplay(
 
   roots.forEach((root) => {
     if (root.previousId) {
-      throw new Error('Root node has a previousId');
+      errorBus.set('Root node has a previousId');
+      return;
     }
     chatPointDisplay.push(...buildDisplayPoints(root, computeDepth(root)));
   });

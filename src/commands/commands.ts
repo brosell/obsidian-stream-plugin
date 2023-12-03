@@ -39,7 +39,7 @@ export const subscribeForContext = (guid: string) => {
       readyForInput.set(true);
       activeChatPointId.set('');
       activeChatPointId.set(cp!.id);
-    }
+    },
   }
 
   subscribeToBus(guid, handlers);

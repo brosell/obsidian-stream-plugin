@@ -1,7 +1,7 @@
 import { writable, derived, get, type Writable, type Readable } from 'svelte/store';
 import { ChatRole, chatPointToHtml, type ChatPoint } from '../models/chat-point';
 import { prepareChatPointsForDisplay, type ChatPointDisplay } from '../services/nested-list-builder';
-import { NoopMeesage, type BusEvent, type Message, type MessageContext } from '../services/bus';
+import { NoopMessage as NoopMessage, type BusEvent, type Message, type MessageContext, errorBus } from '../services/bus';
 import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
@@ -74,7 +74,8 @@ const createDataStores = (guid: string) => {
   const forkChatPoint = (chatPointId: string) => {
     const source = getChatPoint(chatPointId) || get(activeChatPoint);
     if (!source) {
-      throw new Error('tried to fork nonexistent ChatPoint');
+      errorBus.set(`tried to fork nonexistent ChatPoint with id: ${chatPointId}`);
+      return;
     }
     const newCP: ChatPoint = { ...source, id: `${g_id++}`, previousId: '', completions: [...source.completions] };
     chatPoints.update(arr => [...arr, newCP]);
@@ -86,7 +87,8 @@ const createDataStores = (guid: string) => {
     chatPoints.update(arr => {
       const index = arr.findIndex(cp => cp.id === chatPointId);
       if (index === -1) {
-        throw new Error('tried to update nonexistent ChatPoint');
+        errorBus.set('tried to update nonexistent ChatPoint');
+        return [...arr];
       }
       const chatPoint = arr[index];
 
@@ -105,14 +107,16 @@ const createDataStores = (guid: string) => {
     const arr = get(chatPoints);
     let node = arr.find(cp => cp.id === leafId);
     if (!node) {
-      throw new Error(`tried to create a thread for nonexisting leaf ${leafId}`)
+      errorBus.set(`tried to create a thread for nonexisting leaf ${leafId}`);
+      return answer;
     }
 
     answer.unshift(node);
     while (node.previousId) {
       node = arr.find(cp => cp.id === node?.previousId);
       if (!node) {
-        throw new Error(`tried to create thread but the linkage is broken ${leafId}`);
+        errorBus.set(`tried to create thread but the linkage is broken ${leafId}`);
+        return answer;
       }
       answer.unshift(node);
     }
@@ -174,7 +178,7 @@ stream: basic
   });
 
   // Bus
-  const bus = writable<Message>(NoopMeesage);
+  const bus = writable<Message>(NoopMessage);
   bus.subscribe((message: Message) => {
     console.log('bus message', message);
   });

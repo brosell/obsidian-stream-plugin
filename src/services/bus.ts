@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import { writable } from "svelte/store";
 
 export enum BusEvent {
@@ -24,11 +25,17 @@ export interface Message {
   details: any
 }
 
-export const NoopMeesage: Message = {
+export const NoopMessage: Message = {
   event: BusEvent.Noop,
   context: Context.Null,
   details: {}
 }
+
+export const errorBus = writable<string>('');
+errorBus.subscribe(error => {
+  console.error(error);
+  new Notice(`Error occurred: ${error}`, 1000);
+});
 
 // export const bus = writable<Message>();
 

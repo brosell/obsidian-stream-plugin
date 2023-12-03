@@ -1,9 +1,10 @@
 import { get } from "svelte/store";
-import { BusEvent, type Message } from "../services/bus";
+import { BusEvent, errorBus, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion, chatPointToMarkdown } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
 import { SUMMARY_MODEL } from "../oai-api-key";
+import prompts from "../models/prompts";
 
 export const subscribeSlashCommandsForContext = (guid: string) => {
   const { activeChatPointId, activeChatPoint, activeChatThread, forkChatPoint, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, deriveThread, updateChatPoint, subscribeToBus, chatPoints, userPromptInput } = getContextualStores(guid);
@@ -60,17 +61,11 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       const cpId = args[0] || get(activeChatPointId) || '';
       const cp = getChatPoint(cpId);
       if (!cp) {
-        throw new Error(`tried to summarize nonexistent ChatPoint with id: ${cpId}`);
+        errorBus.set(`tried to summarize nonexistent ChatPoint with id: ${cpId}`);
+        return;
       }
       const cpText = chatPointToMarkdown(cp);
-      const prompt = `
-Create a summary with less than 10 words of the following interaction, capturing
-the main insights and factual information from both the user's prompt and the
-assistant's response. Focus on presenting the essence of the exchange, ensuring
-the summary is balanced, concise, and informative. priority is given to the assistant's response.
-It is critical that the summary not exceed 10 words. IT MUST NOT EXCEED 10 WORDS!!!! If your summary is more than 10 words, then revise it.
-===
-    ${cpText}`;
+      const prompt = prompts.SummaryOfChatPoint({ text: cpText });
 
       const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
       updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
