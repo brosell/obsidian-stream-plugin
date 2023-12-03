@@ -6,9 +6,10 @@
   import { afterUpdate } from "svelte";
   import YAML from "hexo-front-matter";
 	import { getContextualStores } from '../stores/contextual-stores';
+  import { BusEvent, Context } from "../services/bus";
 
 	export let guid: string;
-	const { treeDisplay } = getContextualStores(guid);
+	const { treeDisplay, sendMessage } = getContextualStores(guid);
 
 	function wrapText(text: string, maxLineLength: number) {
 		const words = text.split(/\s+/);
@@ -30,8 +31,15 @@
 		return lines.join('\n');
 	}
 
+	function activate(id: string) {
+		console.log(`activate ${id}`);
+		sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, {content: `/setThread(${id})` } );
+	}
+
+	(window as any).chat_map_activate = activate;
+
   $: value = $treeDisplay.reduce((md, item ) => {
-		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - ${wrapText((item.summary || ''), 30) || 'no summary'}` + "\n";
+		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span onclick="chat_map_activate('${item.id}')">${wrapText((item.summary || ''), 30) || 'no summary'}</span>\n`;
 	}, "\n");
 
   let mindmap: SVGSVGElement;
