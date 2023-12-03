@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { BusEvent, errorBus, type Message } from "../services/bus";
+import { BusEvent, Context, errorBus, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion, chatPointToMarkdown } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
@@ -7,7 +7,10 @@ import { SUMMARY_MODEL } from "../oai-api-key";
 import prompts from "../models/prompts";
 
 export const subscribeSlashCommandsForContext = (guid: string) => {
-  const { activeChatPointId, activeChatPoint, activeChatThread, forkChatPoint, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, deriveThread, updateChatPoint, subscribeToBus, chatPoints, userPromptInput } = getContextualStores(guid);
+  const { activeChatPointId, activeChatPoint, activeChatThread, chatPoints, userPromptInput, 
+    forkChatPoint, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, 
+    updateChatPoint, subscribeToBus, sendMessage } = getContextualStores(guid);
+
   const AI = new AiInterface(100, SUMMARY_MODEL || 'gpt-3.5-turbo' );
   
   const slashFunctions: Record<string, (c: string[]) => void> = {
@@ -70,33 +73,24 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
       updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
     },
-    // summarizeThread: async (args: string[]) => {
-    //   let [cpId, wordCount] = args;
-    //   wordCount = wordCount || '100';
-    //   cpId = cpId || get(activeChatPointId);
-    //   const cp = getChatPoint(cpId);
-    //   if (!cp) {
-    //     throw new Error(`tried to summarize nonexistent thread with id: ${cpId}`);
-    //   }
-    //   activeChatPointId.set(cpId);
+    analyzeMyWriting: async (args: string[]) => {
+      const myCompletions = get(chatPoints)
+        .flatMap((cp: ChatPoint) => cp.completions)
+        .filter((c: Completion) => c.role === ChatRole.USER)
+        .map((c: Completion) => c.content.trim())
+        .join('\n===\n');
 
-    //   const cpText = chatPointToMarkdown(cp);
-    //   const prompt = `Summarize the following exchange with ${wordCount} or fewer words. The summary must not excide ${wordCount} words
-    // ===
-    // ${cpText}`;
-
-    //   //sendMessage(BusEvent.ChatIntent, Context.Null, { content: prompt});
-
-    //   const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
-    //   const systemPrompt = `The following is a summary of our conversation so far.
-    // ===
-    // ${summary}`;
-
-    //   const newCP = addNewChatPoint(systemPrompt, cpId, ChatRole.SYSTEM);
-    //   activeChatPointId.set(newCP.id);
-
-    // },
+      const prompt = prompts.AnalyzeMyWriting({ text: myCompletions });
+      //sendMessage(BusEvent.ChatIntent, { ...Context.Null, referenceId: '0', guid } , { content: prompt});
+      const emulationPrompt = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
+      sendMessage(BusEvent.SlashFunction, { ...Context.Null, referenceId: '0', guid } , { content: `/addSystemPrompt(${emulationPrompt})` })
+    },
+    move: (args: string[]) => {
+      const [id, newPreviousId] = args;
+      updateChatPoint(id, (cp: ChatPoint) => ({ ...cp, previousId: newPreviousId }));
+    }
   }
+
 
   const commands: Record<string, (m: Message) => void> = {
     [BusEvent.SlashFunction]: (message) => {

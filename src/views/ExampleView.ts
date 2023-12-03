@@ -1,4 +1,4 @@
-import { ItemView, TFile, TextFileView, WorkspaceLeaf } from 'obsidian';
+import { TFile, TextFileView, WorkspaceLeaf } from 'obsidian';
 
 import Component from '../components/PluginRoot.svelte';
 import { getContextualStores } from '../stores/contextual-stores';
