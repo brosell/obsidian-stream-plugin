@@ -1,8 +1,9 @@
 import { get } from "svelte/store";
-import { BusEvent, type Message } from "../services/bus";
+import { BusEvent, Context, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
+import { options } from "../oai-api-key";
 
 export const subscribeForContext = (guid: string) => {
   const AI = new AiInterface(100, 'gpt-4-1106-preview');
@@ -37,6 +38,10 @@ export const subscribeForContext = (guid: string) => {
       const cp = updateChatPoint(context.referenceId, (cp: ChatPoint) => {
         return {...cp, completions: [...cp.completions, { role: ChatRole.ASSISTANT, content: details.content }]};
       });
+
+      if (options.AUTO_SUMMARIZE) {
+        sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${context.referenceId})`});
+      }
 
       readyForInput.set(true);
       activeChatPointId.set('');

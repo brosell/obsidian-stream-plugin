@@ -3,7 +3,7 @@ import { BusEvent, Context, errorBus, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion, chatPointToMarkdown } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
-import { SUMMARY_MODEL } from "../oai-api-key";
+import { options } from "../oai-api-key";
 import prompts from "../models/prompts";
 
 export const subscribeSlashCommandsForContext = (guid: string) => {
@@ -11,7 +11,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
     forkChatPoint, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, 
     updateChatPoint, subscribeToBus, sendMessage } = getContextualStores(guid);
 
-  const AI = new AiInterface(100, SUMMARY_MODEL || 'gpt-3.5-turbo' );
+  const AI = new AiInterface(100, options.SUMMARY_MODEL || 'gpt-3.5-turbo' );
   
   const slashFunctions: Record<string, (c: string[]) => void> = {
     setThread: (args: string[]) => {
