@@ -1,7 +1,8 @@
 <script lang='ts'>
   import { getContextualStores } from "../stores/contextual-stores";
   import { BusEvent, Context } from '../services/bus';
-
+  import Select from 'svelte-select';
+	
   export let header = 'header';
   export let text = 'Default Card Text';
   export let isActive = false;
@@ -12,22 +13,27 @@
   
   const {sendMessage} = getContextualStores(guid);
   
-  export let onBranch = () => {
-    // Branch action
-    sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/setThread(${chatPointId})`});
+  const menu: Record<string, () => void> = {
+    Branch: () => {
+      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/setThread(${chatPointId})`});
+    },
+    Fork: () => {
+      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/fork(${chatPointId})`});
+    },
+    "Summarize This": () => {
+      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${chatPointId})`});
+    },
   };
 
-  export let onFork = () => {
-    // Fork action
-    sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/fork(${chatPointId})`});
-  };
-
-  export let onSummarize = () => {
-    // Summarize action
-    console.log('summarize');
-    sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${chatPointId})`});
-
-  };
+	let items = Object.keys(menu);
+	let value: any = null;
+  $: {
+    if (value) {
+      console.log(value);
+      menu[value.value]();
+      value = null;
+    }
+  }
 
 </script>
 
@@ -38,15 +44,12 @@
       </summary>
       <p class="m-0">{@html text}</p>
       <div class="icon-row">
-        <button on:click={onBranch} title="Branch">
-          ⤴️
-        </button>
-        <button on:click={onFork} title="Fork">
-          🔀
-        </button>
-        <button on:click={onSummarize} title="Summarize">
-          📋
-        </button>
+        <Select
+          items={items}
+          bind:value
+          placeholder="Select an action"
+          class="select"
+        />
       </div>
     </details>
   </div>
