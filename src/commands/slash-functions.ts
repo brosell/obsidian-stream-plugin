@@ -74,14 +74,14 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
     },
     summarizeThread: async (args: string[]) => {
-      const cpId = args[0] || get(activeChatPointId);
+      const cpId = args[0] || get(activeChatPointId)!;
       activeChatPointId.set(cpId);
       const myCompletions = get(activeChatThread)
         .flatMap((cp: ChatPoint) => cp.completions);
 
       myCompletions.push({ role: ChatRole.USER, content: prompts.SummaryOfThread() });
       const summary = await AI.prompt([...myCompletions], 'awaited');
-      const cp = addNewChatPoint(summary, '0', ChatRole.SYSTEM);
+      const cp = addNewChatPoint(summary, cpId, ChatRole.SYSTEM);
       activeChatPointId.set(cp.id);
     },
     analyzeMyWriting: async (args: string[]) => {
