@@ -79,7 +79,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       const myCompletions = get(activeChatThread)
         .flatMap((cp: ChatPoint) => cp.completions);
 
-      myCompletions.push({ role: ChatRole.USER, content: prompts.SummaryOfThread({}) });
+      myCompletions.push({ role: ChatRole.USER, content: prompts.SummaryOfThread() });
       const summary = await AI.prompt([...myCompletions], 'awaited');
       const cp = addNewChatPoint(summary, '0', ChatRole.SYSTEM);
       activeChatPointId.set(cp.id);
