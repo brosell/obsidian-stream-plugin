@@ -18,7 +18,7 @@
     const el = getTextAreaElement()
       if (el) {
         setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          //el.scrollIntoView({ behavior: 'smooth', block: 'end' });
           el.focus();
         },100);
       }

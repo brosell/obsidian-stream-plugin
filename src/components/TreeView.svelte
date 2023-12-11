@@ -2,15 +2,10 @@
   import { getContextualStores } from "../stores/contextual-stores";
   import ChatPointCard from "./ChatPointCard.svelte";
   import ChatInput from './ChatInput.svelte';
-  import type { ChatPoint } from "../models/chat-point";
 
   export let guid: string;
 
   const { activeChatThread, activeChatPointId, treeDisplay } = getContextualStores(guid);
-
-  // 
-  //       onBranch={() => activeChatPointId.set(chatPointDisplay.id)}
-  //       onFork={() => forkChatPoint(chatPointDisplay.id)}
 
 </script>
 
