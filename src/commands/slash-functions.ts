@@ -43,7 +43,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       activeChatPointId.set('');
       deleteChatPointAndDescendants(idToDelete);
 
-      for (let i = 0, [cpId] = currentThreadIds[i]; i < currentThreadIds.length; i++) {
+      for (let i = 0; i < currentThreadIds.length; i++) {
         const cp = getChatPoint(currentThreadIds[i]);
         if (cp) {
           activeChatPointId.set(cp.id)
@@ -72,6 +72,17 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
 
       const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
       updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
+    },
+    summarizeThread: async (args: string[]) => {
+      const cpId = args[0] || get(activeChatPointId);
+      activeChatPointId.set(cpId);
+      const myCompletions = get(activeChatThread)
+        .flatMap((cp: ChatPoint) => cp.completions);
+
+      myCompletions.push({ role: ChatRole.USER, content: prompts.SummaryOfThread({}) });
+      const summary = await AI.prompt([...myCompletions], 'awaited');
+      const cp = addNewChatPoint(summary, '0', ChatRole.SYSTEM);
+      activeChatPointId.set(cp.id);
     },
     analyzeMyWriting: async (args: string[]) => {
       const myCompletions = get(chatPoints)
@@ -130,6 +141,3 @@ function parseSlashCommand(input: string): { commandName: string; args: string[]
 
   return { commandName, args };
 }
-
-
-
