@@ -10,7 +10,7 @@
   afterUpdate(() => {
     const scrollHere = document.querySelector('.scroll-here');
     if (scrollHere) {
-      scrollHere.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      setTimeout(() => { scrollHere.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, 100);
     }
   });
 
@@ -20,6 +20,11 @@
     const scrollHere = document.querySelector('.scroll-here');
     if (scrollHere) {
       setTimeout(() => { scrollHere.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, 100);
+    }
+
+    const scrollHere2 = document.querySelector('.scroll-here2');
+    if (scrollHere2) {
+      setTimeout(() => { scrollHere2.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, 100);
     }
   }
 </script>

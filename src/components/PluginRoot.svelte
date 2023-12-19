@@ -52,7 +52,7 @@
 
 <div class="flex h-full select-text">
   <div bind:this={leftPanel} class=" p-4 overflow-auto" style="width:50%;">
-    <!-- <TreeView {guid} /> -->
+    <TreeView {guid} />
     <ChatMap {guid }/>
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->

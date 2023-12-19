@@ -16,10 +16,11 @@
         chatPointId={chatPointDisplay.id}
         header={`${chatPointDisplay.id}: ${chatPointDisplay.summary??''}`} 
         text={chatPointDisplay.displayValue}
-        isActive={!!$activeChatThread.some(cp => cp.id === chatPointDisplay.id)}
+        isActive={$activeChatPointId === chatPointDisplay.id}
       />
       {#if $activeChatPointId === chatPointDisplay.id}
-          <ChatInput {guid} />
+          <!-- <ChatInput {guid} /> -->
+          <div class="scroll-here2"></div>
       {/if}
     </div>
   {/each}

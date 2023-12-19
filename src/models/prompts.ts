@@ -12,7 +12,9 @@ If your summary is more than 10 words, then revise it.
 {{text}}
   `),
   SummaryOfDiscussion: tStringConstructor<{ text: string }>(`
-
+  Could you provide a summary of our most recent exchange, and ensure that it reflects the 
+  context and key points from the entire conversation up to this point? 
+  IMPORTANT: limit the summary to 30 words. Do not acknowledge that it is a conversation.
   `),
   AnalyzeMyWriting: tStringConstructor<{ text: string }>(`
 Please analyze the text following these instructions.
