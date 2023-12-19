@@ -1,4 +1,4 @@
-import { tStringConstructor } from "../services/template-strings";
+import { stringConstructor, tStringConstructor } from "../services/template-strings";
 
 export default {
   SummaryOfChatPoint: tStringConstructor<{ text: string }>(`
@@ -15,6 +15,10 @@ If your summary is more than 10 words, then revise it.
   Could you provide a summary of our most recent exchange, and ensure that it reflects the 
   context and key points from the entire conversation up to this point? 
   IMPORTANT: limit the summary to 30 words. Do not acknowledge that it is a conversation.
+  `),
+  SummaryOfThread: stringConstructor(`
+Can you provide a comprehensive summary of the preceding? The summary should cover all the key points and main ideas presented, while also condensing the information into a concise and easy-to-understand format. Please ensure that the summary includes relevant details and examples that support the main ideas, while avoiding any unnecessary information or repetition. The length of the summary should be appropriate for the length and complexity of the original text, providing a clear and accurate overview without omitting any important information. The summary must be usable as background information for future discussions without losing fidelity.
+The summary should be in prose form as a brief. Avoid bullet points. The text should be dry and not wordy. Do not acknowledge that it is a conversation.
   `),
   AnalyzeMyWriting: tStringConstructor<{ text: string }>(`
 Please analyze the text following these instructions.

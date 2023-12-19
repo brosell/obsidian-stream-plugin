@@ -23,6 +23,9 @@
     "Summarize This": () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${chatPointId})`});
     },
+    "Summarize the Thread": () => {
+      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarizeThread(${chatPointId})`});
+    },
   };
 
 	let items = Object.keys(menu);
