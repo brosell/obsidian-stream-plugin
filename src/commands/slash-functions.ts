@@ -9,7 +9,7 @@ import prompts from "../models/prompts";
 export const subscribeSlashCommandsForContext = (guid: string) => {
   const { activeChatPointId, activeChatPoint, activeChatThread, chatPoints, userPromptInput, 
     forkChatPoint, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, 
-    updateChatPoint, subscribeToBus, sendMessage } = getContextualStores(guid);
+    updateChatPoint, subscribeToBus, sendMessage, deriveThread } = getContextualStores(guid);
 
   const AI = new AiInterface(100, options.SUMMARY_MODEL || 'gpt-3.5-turbo' );
   
@@ -61,16 +61,18 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       setTimeout(() => userPromptInput.set(userPrompt));
     },
     summarize: async (args: string[]) => {
+      console.log('summarize', args);
       const cpId = args[0] || get(activeChatPointId) || '';
       const cp = getChatPoint(cpId);
       if (!cp) {
         errorBus.set(`tried to summarize nonexistent ChatPoint with id: ${cpId}`);
         return;
       }
-      const cpText = chatPointToMarkdown(cp);
-      const prompt = prompts.SummaryOfChatPoint({ text: cpText });
 
-      const summary = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
+      const thread = deriveThread(cpId);
+      const completions = thread.flatMap((cp: ChatPoint) => cp.completions) as Completion[];
+      completions.push({ role: ChatRole.USER, content: prompts.SummaryOfDiscussion({text:''}) });
+      const summary = await AI.prompt(completions, 'awaited');
       updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
     },
     summarizeThread: async (args: string[]) => {
