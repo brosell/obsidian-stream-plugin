@@ -16,7 +16,7 @@
         chatPointId={chatPointDisplay.id}
         header={`${chatPointDisplay.id}: ${chatPointDisplay.summary??''}`} 
         text={chatPointDisplay.displayValue}
-        isActive={$activeChatPointId === chatPointDisplay.id}
+        isActive={!!$activeChatThread.some(cp => cp.id === chatPointDisplay.id)}
       />
       {#if $activeChatPointId === chatPointDisplay.id}
           <!-- <ChatInput {guid} /> -->

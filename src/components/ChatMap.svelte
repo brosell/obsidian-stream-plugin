@@ -9,7 +9,7 @@
   import { BusEvent, Context } from "../services/bus";
 
 	export let guid: string;
-	const { treeDisplay, sendMessage } = getContextualStores(guid);
+	const { treeDisplay, activeChatThread } = getContextualStores(guid);
 
 	function wrapText(text: string, maxLineLength: number) {
 		const words = text.split(/\s+/);
@@ -31,9 +31,10 @@
 		return lines.join('\n');
 	}
 
-	
+	$: activeNodeIds = $activeChatThread.map(cp => cp.id);
   $: value = $treeDisplay.reduce((md, item ) => {
-		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.summary || ''), 30) || 'no summary'}</span>\n`;
+    const isActive=!!activeNodeIds.find(cp => cp === item.id);
+		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span style="${isActive?"background-color:pink":""}" onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.summary || ''), 30) || 'no summary'}</span>\n`;
 	}, "\n");
 
   let mindmap: SVGSVGElement;
@@ -123,4 +124,8 @@
 		width: 100%;
 		height: 100%;
 	}
+
+  .active {
+    background-color: #f0f0f0;
+  }
 </style>

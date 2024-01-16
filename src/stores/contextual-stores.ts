@@ -158,7 +158,7 @@ const createDataStores = (guid: string) => {
     const rfi: boolean = get(readyForInput);
   
     const md: string = t.map(item => {
-      const completionsMarkdown: string = item.completions.map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
+      const completionsMarkdown: string = item.completions.map(completion => `**${completion.role}**:\n\n${completion.content}`).join('\n\n');
       return `### ${item.id}\n${completionsMarkdown}`;
     }).join('\n\n');
     return `${md}\n\n---\n ${!rfi ? '==waiting for response...==' : ''}`;
