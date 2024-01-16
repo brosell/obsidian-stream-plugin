@@ -51,6 +51,13 @@
 </script>
 
 <div class="flex h-full select-text">
+  
+  <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
+    <MarkdownView {guid} />
+    <ChatInput {guid} />
+  </div>
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div id="resizer" on:mousedown={initResize}></div>
   <div bind:this={leftPanel} class="p-4 overflow-auto" style="width:50%; display: flex; flex-direction: column;">
     <div class="flex-auto" style="height: 66.67%; overflow-y: auto;">
       <TreeView {guid} />
@@ -58,12 +65,6 @@
     <div class="flex-auto" style="height: 33.33%;">
       <ChatMap {guid}/>
     </div>
-  </div>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div id="resizer" on:mousedown={initResize}></div>
-  <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
-    <MarkdownView {guid} />
-    <ChatInput {guid} />
   </div>
 </div>
 

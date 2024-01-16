@@ -69,9 +69,8 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
         return;
       }
 
-      const thread = deriveThread(cpId);
-      const completions = thread.flatMap((cp: ChatPoint) => cp.completions) as Completion[];
-      completions.push({ role: ChatRole.USER, content: prompts.SummaryOfDiscussion({text:''}) });
+      const textToSummarize = chatPointToMarkdown(cp);
+      const completions = [{ role: ChatRole.USER, content: prompts.SummaryOfChatPoint({text:textToSummarize}) }];
       const summary = await AI.prompt(completions, 'awaited');
       updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
     },
