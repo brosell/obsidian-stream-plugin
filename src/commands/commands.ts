@@ -3,10 +3,15 @@ import { BusEvent, Context, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
-import { options } from "../oai-api-key";
+import { settingsStore } from "../stores/settings";
 
 export const subscribeForContext = (guid: string) => {
-  const AI = new AiInterface(100, 'gpt-4-1106-preview');
+  let AI: AiInterface;
+  let autoSUmmarize = false;
+  settingsStore.subscribe((settings) => {
+    AI = new AiInterface(100, settings.MODEL || 'gpt-3.5-turbo');
+    autoSUmmarize = settings.AUTO_SUMMARIZE;
+  });
   
   const { sendMessage, activeChatPointId, addNewChatPoint, deriveThread, updateChatPoint, subscribeToBus, readyForInput } = getContextualStores(guid);
   const handlers = {
@@ -39,7 +44,7 @@ export const subscribeForContext = (guid: string) => {
         return {...cp, completions: [...cp.completions, { role: ChatRole.ASSISTANT, content: details.content }]};
       });
 
-      if (options.AUTO_SUMMARIZE) {
+      if (autoSUmmarize) {
         sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${context.referenceId})`});
       }
 

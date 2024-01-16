@@ -1,18 +1,24 @@
 import OpenAI from "openai";
 // import openaiTokenCounter, { type ModelType } from 'openai-gpt-token-counter'; //https://snyk.io/advisor/npm-package/openai-gpt-token-counter
-import { OPENAI_API_KEY } from "../oai-api-key";
 import type { Completion } from "../models/chat-point";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions.mjs";
 import { BusEvent } from "./bus";
 import { getContextualStores } from "../stores/contextual-stores";
+import { settingsStore } from "../stores/settings";
+import { get } from "svelte/store";
 
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+
 
 export class AiInterface {
-  constructor(private safetyNet: number = 30, private model: string = 'gpt-3.5-turbo') { }
+  openai!: OpenAI;
+  constructor(private safetyNet: number = 30, private model: string = 'gpt-3.5-turbo') {
+    settingsStore.subscribe((settings) => {
+    this.openai = new OpenAI({
+      apiKey: settings.API_KEY,
+      dangerouslyAllowBrowser: true
+    });
+  });
+  }
 
   private _count: number = 0;
   get count() { return this._count; }
@@ -25,7 +31,7 @@ export class AiInterface {
     try {
       this._count++;
       process.stdout.write('.');
-      const chatCompletion = await openai.chat.completions.create({
+      const chatCompletion = await this.openai.chat.completions.create({
           messages: completions.map(c => ({ role: c.role.toLowerCase(), content: c.content } as ChatCompletionMessageParam)), 
           model: this.model
         }, 
