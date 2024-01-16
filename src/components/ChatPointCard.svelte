@@ -9,7 +9,7 @@
   export let chatPointId: string;
   export let guid: string;
 
-  const open = isActive && text.indexOf('SYSTEM') === -1;
+  const open = false; //isActive && text.indexOf('SYSTEM') === -1;
   
   const {sendMessage} = getContextualStores(guid);
   
@@ -44,6 +44,14 @@
     <details open={open}>
       <summary>
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
+        <div class="icon-row">
+          <Select
+            items={items}
+            bind:value
+            placeholder="Select an action"
+            class="select"
+          />
+        </div>
       </summary>
       <p class="m-0">{@html text}</p>
       <div class="icon-row">
