@@ -95,11 +95,12 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       const prompt = prompts.AnalyzeMyWriting({ text: myCompletions });
       //sendMessage(BusEvent.ChatIntent, { ...Context.Null, referenceId: '0', guid } , { content: prompt});
       const emulationPrompt = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
-      sendMessage(BusEvent.SlashFunction, { ...Context.Null, referenceId: '0', guid } , { content: `/addSystemPrompt(${emulationPrompt})` })
+      sendMessage(BusEvent.SlashFunction, { ...Context.Null, referenceId: '0', guid } , { content: `/addSystemPrompt(${emulationPrompt})` });
     },
     move: (args: string[]) => {
       const [id, newPreviousId] = args;
       updateChatPoint(id, (cp: ChatPoint) => ({ ...cp, previousId: newPreviousId }));
+      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid } , { content: `/setThread(${id})` });
     }
   }
 
