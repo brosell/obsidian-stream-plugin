@@ -14,9 +14,8 @@
     <div style="padding-left: {chatPointDisplay.depth}em;">
       <ChatPointCard {guid}
         chatPointId={chatPointDisplay.id}
-        header={`${chatPointDisplay.id}: ${chatPointDisplay.summary??''}`} 
-        text={chatPointDisplay.displayValue}
-        isActive={!!$activeChatThread.some(cp => cp.id === chatPointDisplay.id)}
+        chatPointDisplay={chatPointDisplay}
+        activeChatThread={$activeChatThread}
       />
       {#if $activeChatPointId === chatPointDisplay.id}
           <!-- <ChatInput {guid} /> -->

@@ -6,7 +6,6 @@
   import { afterUpdate } from "svelte";
   import YAML from "hexo-front-matter";
 	import { getContextualStores } from '../stores/contextual-stores';
-  import { BusEvent, Context } from "../services/bus";
 
 	export let guid: string;
 	const { treeDisplay, activeChatThread } = getContextualStores(guid);
@@ -34,12 +33,11 @@
 	$: activeNodeIds = $activeChatThread.map(cp => cp.id);
   $: value = $treeDisplay.reduce((md, item ) => {
     const isActive=!!activeNodeIds.find(cp => cp === item.id);
-		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span style="${isActive?"background-color:pink":""}" onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.summary || ''), 30) || 'no summary'}</span>\n`;
+		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span style="${isActive?"background-color:pink":""}" onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.chatPoint.summary || ''), 30) || 'no summary'}</span>\n`;
 	}, "\n");
 
   let mindmap: SVGSVGElement;
   let linkSVG: any;
-  let show = false;
   
   function replaceMarkdown(md: string) {
     md = md.replace(

@@ -2,12 +2,28 @@
   import { getContextualStores } from "../stores/contextual-stores";
   import { BusEvent, Context } from '../services/bus';
   import Select from 'svelte-select';
-	
-  export let header = 'header';
-  export let text = 'Default Card Text';
-  export let isActive = false;
+  import type { ChatPointDisplay } from "../services/nested-list-builder";
+  import type { ChatPoint } from "../models/chat-point";
+  
   export let chatPointId: string;
   export let guid: string;
+
+  export let chatPointDisplay: ChatPointDisplay;
+  export let activeChatThread: ChatPoint[];
+
+  let isActive: boolean = false;
+  $: {
+    isActive = !!activeChatThread.find(cp => cp.id === chatPointDisplay.id);
+  }
+
+  let header: string = '';
+  $: {
+    header = `${chatPointDisplay.id}: ${chatPointDisplay.chatPoint.summary??''}`;
+  }
+  let updateChatPoint: (chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint) => ChatPoint;
+  $: {
+    updateChatPoint = getContextualStores(guid).updateChatPoint;
+  }
 
   const open = false; //isActive && text.indexOf('SYSTEM') === -1;
   
@@ -28,6 +44,15 @@
     },
   };
 
+  let selected: boolean = false;
+  const toggleSelected = () => {
+    console.log('toggleSelected', selected);
+    selected = !selected;
+    updateChatPoint(chatPointDisplay.id, (cp) => ({
+      ...cp, selected
+    }));
+  };
+
 	let items = Object.keys(menu);
 	let value: any = null;
   $: {
@@ -38,11 +63,13 @@
     }
   }
 
+
 </script>
 
   <div class="card {isActive?'active':''}">
     <details open={open}>
       <summary>
+        <input type="checkbox" checked={chatPointDisplay.chatPoint.selected} on:change={toggleSelected} />
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
         <div class="icon-row">
           <Select
@@ -53,7 +80,7 @@
           />
         </div>
       </summary>
-      <p class="m-0">{@html text}</p>
+      <p class="m-0">{@html chatPointDisplay.displayValue}</p>
       <div class="icon-row">
         <Select
           items={items}
