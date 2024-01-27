@@ -9,11 +9,13 @@
   export let guid: string;
 
   export let chatPointDisplay: ChatPointDisplay;
-  export let activeChatThread: ChatPoint[];
+  export let activeChatThread: ChatPoint[] = [];
+  export let showChrome: boolean = true;
+  export let showOpen: boolean = false;
 
   let isActive: boolean = false;
   $: {
-    isActive = !!activeChatThread.find(cp => cp.id === chatPointDisplay.id);
+    isActive = !activeChatThread || !!activeChatThread.find(cp => cp.id === chatPointDisplay.id);
   }
 
   let header: string = '';
@@ -67,10 +69,25 @@
 </script>
 
   <div class="card {isActive?'active':''}">
-    <details open={open}>
+    <details open={showOpen}>
       <summary>
-        <input type="checkbox" checked={chatPointDisplay.chatPoint.selected} on:change={toggleSelected} />
+        {#if (showChrome)}
+          <input type="checkbox" checked={chatPointDisplay.chatPoint.selected} on:change={toggleSelected} />
+        {/if}
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
+        {#if (showChrome)}
+          <div class="icon-row">
+            <Select
+              items={items}
+              bind:value
+              placeholder="Select an action"
+              class="select"
+            />
+          </div>
+        {/if}
+      </summary>
+      <p class="m-0">{@html chatPointDisplay.displayValue}</p>
+      {#if (showChrome)}
         <div class="icon-row">
           <Select
             items={items}
@@ -79,16 +96,7 @@
             class="select"
           />
         </div>
-      </summary>
-      <p class="m-0">{@html chatPointDisplay.displayValue}</p>
-      <div class="icon-row">
-        <Select
-          items={items}
-          bind:value
-          placeholder="Select an action"
-          class="select"
-        />
-      </div>
+      {/if}
     </details>
   </div>
 

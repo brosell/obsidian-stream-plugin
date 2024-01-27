@@ -15,6 +15,7 @@ export interface ContextualStores {
   activeChatPoint: Readable<ChatPoint | undefined>,
   readyForInput: Writable<boolean>,
   treeDisplay: Readable<ChatPointDisplay[]>,
+  chatDisplay: Readable<ChatPointDisplay[]>,
   userPromptInput: Writable<string>,
   markdown: Writable<string>,
   renderedHtml: Readable<string>,
@@ -144,7 +145,7 @@ const createDataStores = (guid: string) => {
 
   const chatPoints: Writable<ChatPoint[]> = writable([] as ChatPoint[]);
   const activeChatPointId: Writable<string> = writable('');
-  const activeChatThread: Readable<ChatPoint[]> = derived(activeChatPointId, deriveThread);
+  const activeChatThread: Readable<ChatPoint[]> = derived([activeChatPointId, chatPoints], ([$id, _$chatPoints]) => deriveThread($id));
   const activeChatPoint: Readable<ChatPoint | undefined> = derived(activeChatPointId, id => get(chatPoints).find(cp => cp.id === id));
 
   // UI
@@ -152,6 +153,12 @@ const createDataStores = (guid: string) => {
   const treeDisplay: Readable<ChatPointDisplay[]> = derived(chatPoints, (chatPoints: ChatPoint[]) =>
     prepareChatPointsForDisplay(chatPoints, (cp: ChatPoint) => chatPointToHtml(cp))
   )
+  
+  const chatDisplay: Readable<ChatPointDisplay[]> 
+      = derived(activeChatThread, (chatPoints: ChatPoint[]) =>
+    prepareChatPointsForDisplay(chatPoints, (cp: ChatPoint) => chatPointToHtml(cp))
+  )
+  
   const userPromptInput: Writable<string> = writable('');
 
   const markdown: Readable<string> = derived(activeChatThread, (t: ChatPoint[]) => {
@@ -212,6 +219,7 @@ stream: basic
     activeChatPoint,
     readyForInput,
     treeDisplay,
+    chatDisplay,
     userPromptInput,
     markdown,
     renderedHtml,

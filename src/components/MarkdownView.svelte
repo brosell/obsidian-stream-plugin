@@ -1,35 +1,45 @@
 <script lang="ts">
   import { afterUpdate } from "svelte";
   import { getContextualStores } from "../stores/contextual-stores";
+  import ChatPointCard from "./ChatPointCard.svelte";
 
 
   export let guid: string;
 
-  const { renderedHtml } = getContextualStores(guid);
+  const { chatDisplay } = getContextualStores(guid);
+
+  const scrollToBottom = (smooth: boolean) => {
+    setTimeout(() => { 
+        const scrollHere = document.querySelector('.scroll-here-chat');
+        if (scrollHere) {
+          scrollHere.scrollIntoView({ behavior: smooth?'smooth':'instant', block: 'end' }) 
+        }
+      }, 100);
+  };
 
   afterUpdate(() => {
-    const scrollHere = document.querySelector('.scroll-here');
-    if (scrollHere) {
-      setTimeout(() => { scrollHere.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, 100);
-    }
+    scrollToBottom(false);
   });
 
-  $: {
-    const t = $renderedHtml;
-    console.log($renderedHtml.length);
-    const scrollHere = document.querySelector('.scroll-here');
-    if (scrollHere) {
-      setTimeout(() => { scrollHere.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, 100);
-    }
-
-    const scrollHere2 = document.querySelector('.scroll-here2');
-    if (scrollHere2) {
-      setTimeout(() => { scrollHere2.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, 100);
-    }
+  $: { // side-effect only
+    const t = $chatDisplay;
+    scrollToBottom(true);
+    
   }
 </script>
 
 <div class="flex-1 overflow-auto p-4">
-  {@html $renderedHtml}
-  <div class="scroll-here"></div>
+  <div class="nowrap">
+    {#each $chatDisplay as chatPointDisplay}
+      <div style="padding-left: 0em;">
+        <ChatPointCard {guid}
+          chatPointId={chatPointDisplay.id}
+          chatPointDisplay={chatPointDisplay}
+          showChrome={false}
+          showOpen={true}
+        />
+      </div>
+    {/each}
+  </div>
+  <div class="scroll-here-chat"></div>
 </div>

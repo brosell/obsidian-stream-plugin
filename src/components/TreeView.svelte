@@ -2,11 +2,30 @@
   import { getContextualStores } from "../stores/contextual-stores";
   import ChatPointCard from "./ChatPointCard.svelte";
   import ChatInput from './ChatInput.svelte';
+  import { afterUpdate } from "svelte";
 
   export let guid: string;
 
   const { activeChatThread, activeChatPointId, treeDisplay } = getContextualStores(guid);
 
+
+  const scrollToBottom = (smooth: boolean) => {
+    setTimeout(() => { 
+        const scrollHere = document.querySelector('.scroll-here-tree');
+        if (scrollHere) {
+          scrollHere.scrollIntoView({ behavior: smooth?'smooth':'instant', block: 'end' }) 
+        }
+      }, 100);
+  };
+
+  afterUpdate(() => {
+    scrollToBottom(false);
+  });
+
+  $: { // side-effect only
+    const t = $treeDisplay;
+    scrollToBottom(true);
+  }
 </script>
 
 <div class="nowrap">
@@ -17,11 +36,10 @@
         chatPointDisplay={chatPointDisplay}
         activeChatThread={$activeChatThread}
       />
-      {#if $activeChatPointId === chatPointDisplay.id}
-          <!-- <ChatInput {guid} /> -->
-          <div class="scroll-here2"></div>
-      {/if}
     </div>
+    {#if $activeChatPointId === chatPointDisplay.id}
+      <div class="scroll-here-tree" />
+    {/if}
   {/each}
 </div>
 
