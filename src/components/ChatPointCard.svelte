@@ -30,8 +30,10 @@
 
   const open = false; //isActive && text.indexOf('SYSTEM') === -1;
   
-  const {sendMessage} = getContextualStores(guid);
+  const {sendMessage, readyForInput, activeChatPointId} = getContextualStores(guid);
   
+  $: isCurrentCard = $activeChatPointId === chatPointDisplay.id;
+
   const menu: Record<string, () => void> = {
     Branch: () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/setThread(${chatPointId})`});
@@ -92,6 +94,9 @@
         {/if}
       </summary>
       <p class="m-0">{@html chatPointDisplay.displayValue}</p>
+      {#if isCurrentCard && !$readyForInput}
+        <div class="width-full bg-blue-200">==waiting for response==</div>
+      {/if}
       {#if (showChrome)}
         <div class="icon-row">
           <Select
