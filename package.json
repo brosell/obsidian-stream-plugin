@@ -1,7 +1,7 @@
 {
   "name": "obsidian-stream-plugin",
   "private": true,
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "main.js",
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "format": "biome format --write ./src",
     "lint": "biome lint --apply-unsafe ./src",
-		"version": "node version-bump.mjs && git add manifest.json public/manifest.json public/versions.json"
+    "version": "node version-bump.mjs && git add manifest.json public/manifest.json public/versions.json"
   },
   "devDependencies": {
     "@biomejs/biome": "1.3.3",
