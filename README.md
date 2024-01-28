@@ -9,4 +9,4 @@ This will
 - update the versions in package.json, (obsidian plugin's) manifest.json, versions.json
 - build the source
 - create a release and tag in the repo
-
+  - Requires GitHub CLI: https://github.com/cli/cli
