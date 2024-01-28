@@ -33,7 +33,7 @@
 	$: activeNodeIds = $activeChatThread.map(cp => cp.id);
   $: value = $treeDisplay.reduce((md, item ) => {
     const isActive=!!activeNodeIds.find(cp => cp === item.id);
-		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span style="${isActive?"background-color:pink":""}" onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.chatPoint.summary || ''), 30) || 'no summary'}</span>\n`;
+		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} - <span title="${(item.chatPoint.summary || '').replaceAll('"', '')}" style="${isActive?"background-color:pink":""}" onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.chatPoint.summary || ''), 30) || 'no summary'}</span>\n`;
 	}, "\n");
 
   let mindmap: SVGSVGElement;
