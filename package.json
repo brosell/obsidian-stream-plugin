@@ -10,7 +10,8 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "format": "biome format --write ./src",
     "lint": "biome lint --apply-unsafe ./src",
-    "version": "node version-bump.mjs && git add manifest.json public/manifest.json public/versions.json"
+    "version": "node ./maintenance-scripts/version-bump.mjs && git add package.json manifest.json public/manifest.json public/versions.json && git commit -m version && git push",
+    "release": "npm version patch --no-git-tag-version && npm run build && bash ./maintenance-scripts/release.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "1.3.3",
