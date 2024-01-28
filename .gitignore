@@ -15,6 +15,7 @@ dist
 dist-ssr
 *.local
 build
+package-lock.json
 
 test-vault/.obsidian/appearance.json
 test-vault/.obsidian/workspace.json
