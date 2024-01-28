@@ -1,5 +1,5 @@
 import { App, MarkdownView, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from "obsidian";
-import { StreamView, STREAM_VIEW_TYPE } from "./views/ExampleView";
+import { StreamView, STREAM_VIEW_TYPE } from "./views/StreamView";
 import "virtual:uno.css";
 import { settingsStore } from "./stores/settings";
 
