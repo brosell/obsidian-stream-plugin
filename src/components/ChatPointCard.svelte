@@ -4,6 +4,7 @@
   import Select from 'svelte-select';
   import type { ChatPointDisplay } from "../services/nested-list-builder";
   import type { ChatPoint } from "../models/chat-point";
+  import { onMount } from "svelte";
   
   export let chatPointId: string;
   export let guid: string;
@@ -55,6 +56,10 @@
     }));
   };
 
+  onMount(() => {
+    selected = chatPointDisplay.chatPoint.selected ?? false;
+  });
+
 	let items = Object.keys(menu);
 	let value: any = null;
   $: {
@@ -72,7 +77,7 @@
     <details open={showOpen}>
       <summary>
         {#if (showChrome)}
-          <input type="checkbox" checked={chatPointDisplay.chatPoint.selected} on:change={toggleSelected} />
+          <input type="checkbox" checked={selected} on:change={toggleSelected} />
         {/if}
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
         {#if (showChrome)}

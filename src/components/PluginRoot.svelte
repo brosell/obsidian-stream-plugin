@@ -10,7 +10,7 @@
   export let guid: string;
   export let viewParent: any;
 
-  const { chatPoints, activeChatPointId } = getContextualStores(guid);
+  const { chatPoints, activeChatPointId, selectedChatPoints } = getContextualStores(guid);
   chatPoints.subscribe(_ => {
     viewParent.requestSave();
   });
@@ -48,6 +48,11 @@
     window.removeEventListener('mouseup', stopResizing);
   }
   
+  function nada(event: any) {
+    console.log('nada', event);
+  }
+
+  
 </script>
 
 <div class="flex h-full select-text">
@@ -58,6 +63,24 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div id="resizer" on:mousedown={initResize}></div>
   <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
+    {#if false}
+      <div class="m-2 h-8 align-middle" style="background-color: #f5f5f5;">
+        {#if $selectedChatPoints?.length}
+          {$selectedChatPoints.length} selected
+          <button class="m-0 p-0 h-6 w-6" on:click={nada} title="Branch">
+            ⤴️
+          </button>
+          <button class="m-0 p-0 h-6 w-6" on:click={nada} title="Fork">
+            🔀
+          </button>
+          <button class="m-0 p-0 h-6 w-6" on:click={nada} title="Summarize">
+            📋
+          </button>
+        {:else}
+          <span  class="m-0 p-0 h-6 align-middle">Make Selection</span>
+        {/if}
+      </div>
+    {/if}
     <div class="flex-auto" style="height: 66.67%; overflow-y: auto;">
       <TreeView {guid} />
     </div>

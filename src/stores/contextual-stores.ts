@@ -13,6 +13,7 @@ export interface ContextualStores {
   activeChatPointId: Writable<string | null>,
   activeChatThread: Readable<ChatPoint[]>,
   activeChatPoint: Readable<ChatPoint | undefined>,
+  selectedChatPoints: Readable<ChatPoint[]>,
   readyForInput: Writable<boolean>,
   treeDisplay: Readable<ChatPointDisplay[]>,
   chatDisplay: Readable<ChatPointDisplay[]>,
@@ -148,6 +149,8 @@ const createDataStores = (guid: string) => {
   const activeChatThread: Readable<ChatPoint[]> = derived([activeChatPointId, chatPoints], ([$id, _$chatPoints]) => deriveThread($id));
   const activeChatPoint: Readable<ChatPoint | undefined> = derived(activeChatPointId, id => get(chatPoints).find(cp => cp.id === id));
 
+  const selectedChatPoints: Readable<ChatPoint[]> = derived(chatPoints, (chatPoints: ChatPoint[]) => chatPoints.filter(cp => cp.selected));
+
   // UI
   const readyForInput: Writable<boolean> = writable(true);
   const treeDisplay: Readable<ChatPointDisplay[]> = derived(chatPoints, (chatPoints: ChatPoint[]) =>
@@ -217,6 +220,7 @@ stream: basic
     activeChatPointId,
     activeChatThread,
     activeChatPoint,
+    selectedChatPoints,
     readyForInput,
     treeDisplay,
     chatDisplay,
