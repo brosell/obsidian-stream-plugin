@@ -3,11 +3,11 @@
   import { BusEvent, Context, type Message } from '../services/bus';
   import { isSlashCommandFormat } from '../commands/slash-functions';
   import { getContextualStores } from '../stores/contextual-stores';
-   
 
   export let guid: string;
+
   const { userPromptInput, readyForInput, sendMessage, bus } = getContextualStores(guid);
-  
+
   let textArea: HTMLTextAreaElement;
 
   onMount(() => {
@@ -41,10 +41,8 @@
     adjustTextareaHeight();
   }
 
-  
-
-  function handleKeyPress(e: KeyboardEvent): void {
-    if (e.key === "Enter" && e.shiftKey) {
+  function checkForSubmitKeys(e: KeyboardEvent): void {
+    if (e.key === "Enter" && e.ctrlKey) {
       const trimmed = $userPromptInput.trim();
       if ($readyForInput) {
         if (isSlashCommandFormat(trimmed)) {
@@ -62,7 +60,6 @@
   export function getTextAreaElement(): HTMLTextAreaElement {
     return textArea;
   }
-
 </script>
 
 <textarea
@@ -71,6 +68,6 @@
   placeholder="Enter your prompt..."
   bind:value={$userPromptInput}
   on:input={callAdjustTextareaHeight}
-  on:keypress={handleKeyPress}
+  on:keyup={checkForSubmitKeys}
   style="max-height: 33%;" 
 />
