@@ -19,7 +19,7 @@ export interface ChatPoint {
 }
 
 export const chatPointToMarkdown = (item: ChatPoint) => {
-  const completionsMarkdown = item.completions.map(completion => `**${completion.role}**: ${completion.content}`).join('\n\n');
+  const completionsMarkdown = item.completions.map(completion => `**${completion.role}**: \n${completion.content}`).join('\n\n');
   return `${completionsMarkdown}`;
 }
 
