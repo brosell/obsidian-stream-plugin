@@ -5,6 +5,9 @@
   import type { ChatPointDisplay } from "../services/nested-list-builder";
   import type { ChatPoint } from "../models/chat-point";
   import { onMount } from "svelte";
+  import { debounce } from 'svelte-reactive-debounce'
+  import { derived, writable } from "svelte/store";
+  import { incrementingStore } from "../stores/counter";
   
   export let chatPointId: string;
   export let guid: string;
@@ -17,10 +20,8 @@
   const {sendMessage, readyForInput, activeChatPointId, streamedCount} = getContextualStores(guid);
   
   const spinner = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
-  let spinnerIndex = 0;
-
-  $: spinnerDisplay = spinner[$streamedCount % spinner.length];
-
+  $: spinnerDisplay = spinner[$incrementingStore % spinner.length];
+  
   let isActive: boolean = false;
   $: {
     isActive = !activeChatThread || !!activeChatThread.find(cp => cp.id === chatPointDisplay.id);
