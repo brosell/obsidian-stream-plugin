@@ -45,42 +45,4 @@ export class AiInterface {
       return `FALSE -${error}`;
     }
   }
-
-  // tokenizeText(text: string, tokensPer: number, tokenCounter: (t: string) => number = (s) => openaiTokenCounter.text(s, this.model)): string[] {
-  //   const result: string[] = [];
-  //   let startIdx = 0;
-
-  //   while (startIdx < text.length) {
-  //       let left = startIdx;
-  //       let right = text.length;
-  //       let lastValidMid = startIdx;
-
-  //       while (left < right) {
-  //           const mid = Math.floor((left + right) / 2);
-  //           const substring = text.slice(startIdx, mid);
-  //           const tokensCount = tokenCounter(substring);
-
-  //           if (tokensCount > tokensPer) {
-  //               right = mid;
-  //           } else {
-  //               lastValidMid = mid;
-  //               left = mid + 1;
-  //           }
-
-  //           if (left >= right) {
-  //               break;
-  //           }
-  //       }
-
-  //       const finalSubstring = text.slice(startIdx, lastValidMid);
-  //       if (finalSubstring) {
-  //           result.push(finalSubstring);
-  //           process.stdout.write(`${Math.floor(startIdx/text.length*100)}%|`);
-  //       }
-
-  //       startIdx = lastValidMid != startIdx ? lastValidMid : text.length;
-  //   }
-  //   return result.filter(s => s.trim().length);
-  // }
-
 }
