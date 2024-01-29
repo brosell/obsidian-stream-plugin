@@ -15,6 +15,7 @@ export interface ContextualStores {
   activeChatPoint: Readable<ChatPoint | undefined>,
   selectedChatPoints: Readable<ChatPoint[]>,
   readyForInput: Writable<boolean>,
+  streamedCount: Writable<number>,
   treeDisplay: Readable<ChatPointDisplay[]>,
   chatDisplay: Readable<ChatPointDisplay[]>,
   userPromptInput: Writable<string>,
@@ -153,6 +154,8 @@ const createDataStores = (guid: string) => {
 
   // UI
   const readyForInput: Writable<boolean> = writable(true);
+  const streamedCount: Writable<number> = writable(0);
+
   const treeDisplay: Readable<ChatPointDisplay[]> = derived(chatPoints, (chatPoints: ChatPoint[]) =>
     prepareChatPointsForDisplay(chatPoints, (cp: ChatPoint) => chatPointToHtml(cp))
   )
@@ -222,6 +225,7 @@ stream: basic
     activeChatPoint,
     selectedChatPoints,
     readyForInput,
+    streamedCount,
     treeDisplay,
     chatDisplay,
     userPromptInput,

@@ -30,7 +30,7 @@
 
   const open = false; //isActive && text.indexOf('SYSTEM') === -1;
   
-  const {sendMessage, readyForInput, activeChatPointId} = getContextualStores(guid);
+  const {sendMessage, readyForInput, activeChatPointId, streamedCount} = getContextualStores(guid);
   
   $: isCurrentCard = $activeChatPointId === chatPointDisplay.id;
 
@@ -95,7 +95,7 @@
       </summary>
       <p class="m-0">{@html chatPointDisplay.displayValue}</p>
       {#if isCurrentCard && !$readyForInput}
-        <div class="width-full bg-blue-200">==waiting for response==</div>
+        <div class="width-full bg-blue-200">==waiting for response== {$streamedCount}</div>
       {/if}
       {#if (showChrome)}
         <div class="icon-row">

@@ -24,20 +24,27 @@ export class AiInterface {
   get count() { return this._count; }
 
   async prompt(completions: Completion[], context: any): Promise<string> {
-    const { sendMessage } = getContextualStores(context.guid);
+    const { sendMessage, streamedCount } = getContextualStores(context.guid);
+    streamedCount.set(0);
     if (this.count > this.safetyNet) {
       throw "out of calls";
     }
     try {
       this._count++;
-      const chatCompletion = await this.openai.chat.completions.create({
+      const stream = await this.openai.chat.completions.create({
           messages: completions.map(c => ({ role: c.role.toLowerCase(), content: c.content } as ChatCompletionMessageParam)), 
-          model: this.model
+          model: this.model,
+          stream: true,
         }, 
         // { timeout: 5000 },
       );
       
-      const content = chatCompletion?.choices[0]?.message.content ?? 'FALSE -m';
+      let content = '';
+      for await (const part of stream) {
+        streamedCount.update(n => n + 1);
+        content += part.choices[0]?.delta?.content || '';
+      }
+
       sendMessage(BusEvent.AIResponseAvailable, context, { content });
       return content;
     } catch (error) {
