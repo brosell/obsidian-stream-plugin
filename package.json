@@ -37,6 +37,7 @@
     "markmap-lib": "^0.15.5",
     "markmap-view": "^0.15.5",
     "openai": "^4.19.0",
+    "svelte-reactive-debounce": "^0.0.2",
     "svelte-select": "^5.8.1"
   }
 }

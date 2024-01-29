@@ -14,6 +14,13 @@
   export let showChrome: boolean = true;
   export let showOpen: boolean = false;
 
+  const {sendMessage, readyForInput, activeChatPointId, streamedCount} = getContextualStores(guid);
+  
+  const spinner = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
+  let spinnerIndex = 0;
+
+  $: spinnerDisplay = spinner[$streamedCount % spinner.length];
+
   let isActive: boolean = false;
   $: {
     isActive = !activeChatThread || !!activeChatThread.find(cp => cp.id === chatPointDisplay.id);
@@ -30,7 +37,6 @@
 
   const open = false; //isActive && text.indexOf('SYSTEM') === -1;
   
-  const {sendMessage, readyForInput, activeChatPointId, streamedCount} = getContextualStores(guid);
   
   $: isCurrentCard = $activeChatPointId === chatPointDisplay.id;
 
@@ -95,7 +101,7 @@
       </summary>
       <p class="m-0">{@html chatPointDisplay.displayValue}</p>
       {#if isCurrentCard && !$readyForInput}
-        <div class="width-full bg-blue-200">==waiting for response== {$streamedCount}</div>
+        <div class="width-full bg-blue-200">==waiting for response== {spinnerDisplay}</div>
       {/if}
       {#if (showChrome)}
         <div class="icon-row">
