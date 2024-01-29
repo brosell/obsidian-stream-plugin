@@ -5,8 +5,6 @@
   import type { ChatPointDisplay } from "../services/nested-list-builder";
   import type { ChatPoint } from "../models/chat-point";
   import { onMount } from "svelte";
-  import { debounce } from 'svelte-reactive-debounce'
-  import { derived, writable } from "svelte/store";
   import { incrementingStore } from "../stores/counter";
   
   export let chatPointId: string;
