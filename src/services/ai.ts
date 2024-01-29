@@ -30,7 +30,6 @@ export class AiInterface {
     }
     try {
       this._count++;
-      process.stdout.write('.');
       const chatCompletion = await this.openai.chat.completions.create({
           messages: completions.map(c => ({ role: c.role.toLowerCase(), content: c.content } as ChatCompletionMessageParam)), 
           model: this.model
