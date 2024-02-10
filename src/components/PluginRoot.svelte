@@ -81,10 +81,7 @@
         {/if}
       </div>
     {/if}
-    <div class="flex-auto" style="height: 66.67%; overflow-y: auto;">
-      <TreeView {guid} />
-    </div>
-    <div class="flex-auto" style="height: 33.33%;">
+    <div class="flex-auto" style="height: 100%;">
       <ChatMap {guid}/>
     </div>
   </div>
