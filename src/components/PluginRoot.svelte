@@ -1,6 +1,6 @@
 <script lang="ts">
   import TreeView from './TreeView.svelte';
-  import MarkdownView from './MarkdownView.svelte';
+  import MarkdownView from './ChatView.svelte';
   import ChatInput from './ChatInput.svelte';
   import { onMount } from 'svelte';
 
