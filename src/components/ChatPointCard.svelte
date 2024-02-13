@@ -12,7 +12,8 @@
 
   export let chatPointDisplay: ChatPointDisplay;
   export let activeChatThread: ChatPoint[] = [];
-  export let showChrome: boolean = true;
+  export let showActions: boolean = true;
+  export let showCheckbox: boolean = false;
   export let showOpen: boolean = false;
 
   const {sendMessage, readyForInput, activeChatPointId, streamedCount} = getContextualStores(guid);
@@ -46,10 +47,10 @@
     Fork: () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/fork(${chatPointId})`});
     },
-    "Summarize This": () => {
+    Summarize: () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${chatPointId})`});
     },
-    "Summarize the Thread": () => {
+    SummarizeThread: () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarizeThread(${chatPointId})`});
     },
   };
@@ -83,34 +84,40 @@
   <div class="card {isActive?'active':''}">
     <details open={showOpen}>
       <summary>
-        {#if (showChrome)}
+        {#if (showCheckbox)}
           <input type="checkbox" checked={selected} on:change={toggleSelected} />
         {/if}
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
-        {#if (showChrome)}
-          <div class="icon-row">
-            <Select
-              items={items}
-              bind:value
-              placeholder="Select an action"
-              class="select"
-            />
-          </div>
+        {#if (showActions)}
+          <span class="icon-row">
+            <button on:click={menu.Branch} title="Branch">
+              ⤴️
+            </button>
+            <button on:click={menu.Fork} title="Fork">
+              🔀
+            </button>
+            <button on:click={menu.Summarize} title="Summarize">
+              📋
+            </button>
+          </span>
         {/if}
       </summary>
       <p class="m-0">{@html chatPointDisplay.displayValue}</p>
       {#if isCurrentCard && !$readyForInput}
         <div class="width-full bg-blue-200">==waiting for response== {spinnerDisplay}</div>
       {/if}
-      {#if (showChrome)}
-        <div class="icon-row">
-          <Select
-            items={items}
-            bind:value
-            placeholder="Select an action"
-            class="select"
-          />
-        </div>
+      {#if (showActions)}
+      <span class="icon-row" style="justify-content: flex-end;">
+        <button on:click={menu.Branch} title="Branch">
+          ⤴️
+        </button>
+        <button on:click={menu.Fork} title="Fork">
+          🔀
+        </button>
+        <button on:click={menu.Summarize} title="Summarize">
+          📋
+        </button>
+      </span>
       {/if}
     </details>
   </div>
@@ -131,16 +138,19 @@
       color: #000000d6;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     }
-    .icon-row {
-      display: flex;
-      justify-content: right;
-      margin-top: 16px;
-    }
-    button {
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 16px;
-      margin-right: 4px;
-    }
+    summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+  }
+  .icon-row {
+    display: flex;
+    gap: 4px;
+  }
+  button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+  }
   </style>

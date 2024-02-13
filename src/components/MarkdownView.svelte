@@ -35,7 +35,7 @@
         <ChatPointCard {guid}
           chatPointId={chatPointDisplay.id}
           chatPointDisplay={chatPointDisplay}
-          showChrome={false}
+          showActions={true}
           showOpen={true}
         />
       </div>
