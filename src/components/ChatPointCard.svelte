@@ -4,8 +4,10 @@
   import Select from 'svelte-select';
   import type { ChatPointDisplay } from "../services/nested-list-builder";
   import type { ChatPoint } from "../models/chat-point";
+  // import type { ThreeDotMenu } from "./ThreeDotMenu.svelte";
   import { onMount } from "svelte";
   import { incrementingStore } from "../stores/counter";
+  import ThreeDotMenu from "./ThreeDotMenu.svelte";
   
   export let chatPointId: string;
   export let guid: string;
@@ -41,19 +43,22 @@
   $: isCurrentCard = $activeChatPointId === chatPointDisplay.id;
 
   const menu: Record<string, () => void> = {
-    Branch: () => {
+    
+    "⤴️ Branch": () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/setThread(${chatPointId})`});
     },
-    Fork: () => {
+    "🔀 Fork": () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/fork(${chatPointId})`});
     },
-    Summarize: () => {
+    "📋 Summarize": () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${chatPointId})`});
     },
     SummarizeThread: () => {
       sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarizeThread(${chatPointId})`});
     },
   };
+
+  const menuOptions = Object.keys(menu).map(key => ({ label: key, fn: menu[key] }));
 
   let selected: boolean = false;
   const toggleSelected = () => {
@@ -78,13 +83,13 @@
     }
   }
 
-  let menuOpen = false;
+  // let menuOpen = false;
 
-  const toggleMenu = (event: MouseEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-    menuOpen = !menuOpen;
-  };
+  // const toggleMenu = (event: MouseEvent) => {
+  //   event.stopPropagation();
+  //   event.preventDefault();
+  //   menuOpen = !menuOpen;
+  // };
 
 </script>
 
@@ -96,14 +101,9 @@
         {/if}
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
         {#if (showActions)}
-        <div class="menu">
-          <span class="hamburger" on:click={toggleMenu}>🍔</span>
-          <div class="icon-menu{menuOpen ? ' visible' : ''}">
-            <button on:click={menu.Branch} title="Branch">⤴️</button>
-            <button on:click={menu.Fork} title="Fork">🔀</button>
-            <button on:click={menu.Summarize} title="Summarize">📋</button>
-          </div>
-        </div>
+        <span class="icon-row">
+          <ThreeDotMenu justify="right" direction="down" options={menuOptions}></ThreeDotMenu>
+        </span>
         {/if}
       </summary>
       <p class="m-0">{@html chatPointDisplay.displayValue}</p>
@@ -111,16 +111,8 @@
         <div class="width-full bg-blue-200">==waiting for response== {spinnerDisplay}</div>
       {/if}
       {#if (showActions)}
-      <span class="icon-row" style="justify-content: flex-end;">
-        <button on:click={menu.Branch} title="Branch">
-          ⤴️
-        </button>
-        <button on:click={menu.Fork} title="Fork">
-          🔀
-        </button>
-        <button on:click={menu.Summarize} title="Summarize">
-          📋
-        </button>
+      <span class="icon-row bottom">
+        <ThreeDotMenu justify="left" direction="up" options={menuOptions}></ThreeDotMenu>
       </span>
       {/if}
     </details>
@@ -151,23 +143,10 @@
     display: flex;
     gap: 4px;
   }
-  button {
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 16px;
-  }
 
-  .icon-menu {
-    display: none;
+  .icon-row.bottom {
+    justify-content: flex-start;
+    width:min-content;
   }
   
-  .icon-menu.visible {
-    display: block;
-  }
-
-  .hamburger {
-    cursor: pointer;
-    font-size: 24px;
-  }
   </style>
