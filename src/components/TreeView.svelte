@@ -35,6 +35,7 @@
         chatPointId={chatPointDisplay.id}
         chatPointDisplay={chatPointDisplay}
         activeChatThread={$activeChatThread}
+        showCheckbox={true}
       />
     </div>
     {#if $activeChatPointId === chatPointDisplay.id}

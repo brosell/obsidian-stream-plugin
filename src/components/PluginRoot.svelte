@@ -52,7 +52,11 @@
     console.log('nada', event);
   }
 
+  let isTreeViewVisible = true;
   
+  function toggleTreeView() {
+    isTreeViewVisible = !isTreeViewVisible;
+  }
 </script>
 
 <div class="flex h-full select-text">
@@ -82,7 +86,17 @@
       </div>
     {/if}
     <div class="flex-auto" style="height: 100%;">
-      <ChatMap {guid}/>
+      <button on:click={toggleTreeView}>{isTreeViewVisible ? 'Show Map' : 'Show Tree'}</button>
+    {#if isTreeViewVisible}
+      <div class="flex-auto" style="height: 100%;">
+        <TreeView {guid}/>
+      </div>
+    {/if}
+    {#if !isTreeViewVisible}
+      <div class="flex-auto" style="height: 100%;">
+        <ChatMap {guid}/>
+      </div>
+    {/if}
     </div>
   </div>
 </div>
