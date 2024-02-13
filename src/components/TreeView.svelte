@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getContextualStores } from "../stores/contextual-stores";
   import ChatPointCard from "./ChatPointCard.svelte";
-  import ChatInput from './ChatInput.svelte';
   import { afterUpdate } from "svelte";
 
   export let guid: string;

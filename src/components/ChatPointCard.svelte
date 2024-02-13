@@ -78,6 +78,13 @@
     }
   }
 
+  let menuOpen = false;
+
+  const toggleMenu = (event: MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    menuOpen = !menuOpen;
+  };
 
 </script>
 
@@ -89,17 +96,14 @@
         {/if}
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
         {#if (showActions)}
-          <span class="icon-row">
-            <button on:click={menu.Branch} title="Branch">
-              ⤴️
-            </button>
-            <button on:click={menu.Fork} title="Fork">
-              🔀
-            </button>
-            <button on:click={menu.Summarize} title="Summarize">
-              📋
-            </button>
-          </span>
+        <div class="menu">
+          <span class="hamburger" on:click={toggleMenu}>🍔</span>
+          <div class="icon-menu{menuOpen ? ' visible' : ''}">
+            <button on:click={menu.Branch} title="Branch">⤴️</button>
+            <button on:click={menu.Fork} title="Fork">🔀</button>
+            <button on:click={menu.Summarize} title="Summarize">📋</button>
+          </div>
+        </div>
         {/if}
       </summary>
       <p class="m-0">{@html chatPointDisplay.displayValue}</p>
@@ -152,5 +156,18 @@
     background: none;
     cursor: pointer;
     font-size: 16px;
+  }
+
+  .icon-menu {
+    display: none;
+  }
+  
+  .icon-menu.visible {
+    display: block;
+  }
+
+  .hamburger {
+    cursor: pointer;
+    font-size: 24px;
   }
   </style>
