@@ -1,3 +1,10 @@
+<script lang="ts" context="module">
+import { writable } from 'svelte/store';
+
+let currentlyOpenMenu = writable("");
+
+</script>
+
 <script lang="ts">
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 
@@ -9,6 +16,8 @@
   export let options: Option[] = [];
   export let direction = "down"; // "up" or "down"
   export let justify = "left"; // "left" or "right"
+
+  let uniqueId = Math.random().toString(36).substring(2, 9);
 
   let menuVisible = false;
   let menuStyle = "";
@@ -38,10 +47,17 @@
   // Toggle the visibility of the menu
   const toggleMenu = () => {
       menuVisible = !menuVisible;
+      currentlyOpenMenu.set(menuVisible ? uniqueId : "");
       if(menuVisible) {
           calculateMenuStyle();
       }
   };
+
+  const unsubscribe = currentlyOpenMenu.subscribe(value => {
+      if (value !== uniqueId) {
+          menuVisible = false;
+      }
+  });
 
   const handleClickOutside = (event: any) => {
       if (!button.contains(event.target)) {
@@ -56,11 +72,13 @@
   // Clean up
   onDestroy(() => {
       window.removeEventListener('click', handleClickOutside);
+      unsubscribe();
   });
 
   function executeOption(fn: ()=>void) {
       fn();
       menuVisible = false; // Hide menu after action
+      currentlyOpenMenu.set("");
   }
 </script>
 
