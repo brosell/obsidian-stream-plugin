@@ -14,7 +14,8 @@
 
   export let chatPointDisplay: ChatPointDisplay;
   export let activeChatThread: ChatPoint[] = [];
-  export let showActions: boolean = true;
+  export let showHeaderActions: boolean = true;
+  export let showFooterActions: boolean = false;
   export let showCheckbox: boolean = false;
   export let showOpen: boolean = false;
 
@@ -82,15 +83,6 @@
       value = null;
     }
   }
-
-  // let menuOpen = false;
-
-  // const toggleMenu = (event: MouseEvent) => {
-  //   event.stopPropagation();
-  //   event.preventDefault();
-  //   menuOpen = !menuOpen;
-  // };
-
 </script>
 
   <div class="card {isActive?'active':''}">
@@ -100,7 +92,7 @@
           <input type="checkbox" checked={selected} on:change={toggleSelected} />
         {/if}
         <span style='font-weight:bold;font-style:italic;'>{@html header}</span>
-        {#if (showActions)}
+        {#if (showHeaderActions)}
         <span class="icon-row">
           <ThreeDotMenu justify="right" direction="down" options={menuOptions}></ThreeDotMenu>
         </span>
@@ -110,7 +102,7 @@
       {#if isCurrentCard && !$readyForInput}
         <div class="width-full bg-blue-200">==waiting for response== {spinnerDisplay}</div>
       {/if}
-      {#if (showActions)}
+      {#if (showFooterActions)}
       <span class="icon-row bottom">
         <ThreeDotMenu justify="left" direction="up" options={menuOptions}></ThreeDotMenu>
       </span>
