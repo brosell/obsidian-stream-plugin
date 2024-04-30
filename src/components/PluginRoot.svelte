@@ -58,32 +58,54 @@
     isTreeViewVisible = !isTreeViewVisible;
   }
 
+
+let leftPanelState = 'normal'; // possible values: 'normal', 'minimized', 'maximized'
+
+function toggleLeftPanel() {
+  if (leftPanelState === 'normal') {
+    leftPanelState = 'maximized';
+  } else if (leftPanelState === 'maximized') {
+    leftPanelState = 'minimized';
+  } else {
+    leftPanelState = 'normal';
+  }
+}
 </script>
 
 <div class="flex h-full select-text">
-  <div bind:this={leftPanel} class="p-4 overflow-auto" style="width:50%; display: flex; flex-direction: column;">
+  <div bind:this={leftPanel} 
+       class="p-4 overflow-auto"
+       style={`display: flex; flex-direction: column; width:${leftPanelState === 'minimized' ? '0%' : leftPanelState === 'maximized' ? '100%' : '50%'}`}>
+       
+    <button on:click={toggleLeftPanel}>Toggle Left Panel</button>
     <MarkdownView {guid} />
     <ChatInput {guid} />
   </div>
+
   <!-- svelte-ignore a11y-no-static-element-interactions -->
+  
     <div id="resizer" on:mousedown={initResize}></div>
-  <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
-      <div class="flex-auto" style="height: 100%;">
-        <button on:click={toggleTreeView}>{isTreeViewVisible ? 'Show Map' : 'Show Tree'}</button>
-      {#if isTreeViewVisible}
+
+    <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
         <div class="flex-auto" style="height: 100%;">
-          <TreeView {guid}/>
+          <button on:click={toggleTreeView}>{isTreeViewVisible ? 'Show Map' : 'Show Tree'}</button>
+
+        {#if isTreeViewVisible}
+          <div class="flex-auto" style="height: 100%;">
+            <TreeView {guid}/>
+          </div>
+        {/if}
+
+        {#if !isTreeViewVisible}
+          <div class="flex-auto" style="height: 100%;">
+            <ChatMap {guid}/>
+          </div>
+        {/if}
         </div>
-      {/if}
-      {#if !isTreeViewVisible}
-        <div class="flex-auto" style="height: 100%;">
-          <ChatMap {guid}/>
-        </div>
-      {/if}
-      </div>
-    
-  </div>
+    </div>
+  
 </div>
+
 
 <style>
   /* Additional styles if necessary */
