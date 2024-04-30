@@ -58,16 +58,14 @@
     isTreeViewVisible = !isTreeViewVisible;
   }
 
-  const singleThreadMode=false;
 </script>
 
 <div class="flex h-full select-text">
-  <div bind:this={leftPanel} class="p-4 overflow-auto" style="width:{singleThreadMode?"100%":"50%"}; display: flex; flex-direction: column;">
+  <div bind:this={leftPanel} class="p-4 overflow-auto" style="width:50%; display: flex; flex-direction: column;">
     <MarkdownView {guid} />
     <ChatInput {guid} />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  {#if (!singleThreadMode)}
     <div id="resizer" on:mousedown={initResize}></div>
   <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
       <div class="flex-auto" style="height: 100%;">
@@ -85,7 +83,6 @@
       </div>
     
   </div>
-  {/if}
 </div>
 
 <style>
