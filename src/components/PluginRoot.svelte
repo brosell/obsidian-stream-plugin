@@ -57,48 +57,35 @@
   function toggleTreeView() {
     isTreeViewVisible = !isTreeViewVisible;
   }
+
+  const singleThreadMode=false;
 </script>
 
 <div class="flex h-full select-text">
-  <div bind:this={leftPanel} class="p-4 overflow-auto" style="width:50%; display: flex; flex-direction: column;">
+  <div bind:this={leftPanel} class="p-4 overflow-auto" style="width:{singleThreadMode?"100%":"50%"}; display: flex; flex-direction: column;">
     <MarkdownView {guid} />
     <ChatInput {guid} />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div id="resizer" on:mousedown={initResize}></div>
+  {#if (!singleThreadMode)}
+    <div id="resizer" on:mousedown={initResize}></div>
   <div bind:this={rightDiv} class="flex flex-col p-4" style="flex-grow:1; min-width:300px; width:{rightDivInitialWidth}">
-    {#if false}
-      <div class="m-2 h-8 align-middle" style="background-color: #f5f5f5;">
-        {#if $selectedChatPoints?.length}
-          {$selectedChatPoints.length} selected
-          <button class="m-0 p-0 h-6 w-6" on:click={nada} title="Branch">
-            ⤴️
-          </button>
-          <button class="m-0 p-0 h-6 w-6" on:click={nada} title="Fork">
-            🔀
-          </button>
-          <button class="m-0 p-0 h-6 w-6" on:click={nada} title="Summarize">
-            📋
-          </button>
-        {:else}
-          <span  class="m-0 p-0 h-6 align-middle">Make Selection</span>
-        {/if}
-      </div>
-    {/if}
-    <div class="flex-auto" style="height: 100%;">
-      <button on:click={toggleTreeView}>{isTreeViewVisible ? 'Show Map' : 'Show Tree'}</button>
-    {#if isTreeViewVisible}
       <div class="flex-auto" style="height: 100%;">
-        <TreeView {guid}/>
+        <button on:click={toggleTreeView}>{isTreeViewVisible ? 'Show Map' : 'Show Tree'}</button>
+      {#if isTreeViewVisible}
+        <div class="flex-auto" style="height: 100%;">
+          <TreeView {guid}/>
+        </div>
+      {/if}
+      {#if !isTreeViewVisible}
+        <div class="flex-auto" style="height: 100%;">
+          <ChatMap {guid}/>
+        </div>
+      {/if}
       </div>
-    {/if}
-    {#if !isTreeViewVisible}
-      <div class="flex-auto" style="height: 100%;">
-        <ChatMap {guid}/>
-      </div>
-    {/if}
-    </div>
+    
   </div>
+  {/if}
 </div>
 
 <style>
