@@ -75,11 +75,15 @@ function toggleLeftPanel() {
 <div class="flex h-full select-text">
   <div bind:this={leftPanel} 
        class="p-4 overflow-auto"
-       style={`display: flex; flex-direction: column; width:${leftPanelState === 'minimized' ? '0%' : leftPanelState === 'maximized' ? '100%' : '50%'}`}>
-       
-    <button on:click={toggleLeftPanel}>Toggle Left Panel</button>
-    <MarkdownView {guid} />
-    <ChatInput {guid} />
+       style={`position: relative; display: flex; flex-direction: column; min-width:${leftPanelState === 'minimized' ? '50px' : 'unset'}; width:${leftPanelState === 'minimized' ? '50px' : leftPanelState === 'maximized' ? '100%' : '50%'}`}>
+
+    <button on:click={toggleLeftPanel} style="position:absolute; top: 0; right: 0;">Toggle Left Panel</button>
+
+    {#if leftPanelState !== 'minimized'}
+      <MarkdownView {guid} />
+      <ChatInput {guid} />
+    {/if}
+    
   </div>
 
   <!-- svelte-ignore a11y-no-static-element-interactions -->
