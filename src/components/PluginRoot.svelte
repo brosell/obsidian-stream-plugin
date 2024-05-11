@@ -6,6 +6,7 @@
 
   import { getContextualStores } from '../stores/contextual-stores';
   import ChatMap from './ChatMap.svelte';
+  import { Platform } from 'obsidian';
 
   export let guid: string;
   export let viewParent: any;
@@ -77,7 +78,9 @@ function toggleLeftPanel() {
        class="p-4 overflow-auto"
        style={`position: relative; display: flex; flex-direction: column; min-width:${leftPanelState === 'minimized' ? '50px' : 'unset'}; width:${leftPanelState === 'minimized' ? '50px' : leftPanelState === 'maximized' ? '100%' : '50%'}`}>
 
+    {#if (Platform.isMobile) }
     <button on:click={toggleLeftPanel} style="position:absolute; top: 0; right: 0;">Toggle Left Panel</button>
+    {/if}
 
     {#if leftPanelState !== 'minimized'}
       <MarkdownView {guid} />

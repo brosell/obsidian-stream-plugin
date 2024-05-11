@@ -3,11 +3,11 @@
   import { BusEvent, Context, type Message } from '../services/bus';
   import { isSlashCommandFormat } from '../commands/slash-functions';
   import { getContextualStores } from '../stores/contextual-stores';
+  import { Platform } from 'obsidian';
 
   export let guid: string;
 
   const { userPromptInput, readyForInput, sendMessage, bus } = getContextualStores(guid);
-
   let textArea: HTMLTextAreaElement;
 
   onMount(() => {
@@ -43,17 +43,21 @@
 
   function checkForSubmitKeys(e: KeyboardEvent): void {
     if (e.key === "Enter" && e.ctrlKey) {
-      const trimmed = $userPromptInput.trim();
-      if ($readyForInput) {
-        if (isSlashCommandFormat(trimmed)) {
-          sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: trimmed});
-        }
-        else {
-          sendMessage(BusEvent.ChatIntent, { ...Context.Null, guid } , { content: trimmed});
-        }
-        userPromptInput.set('');
-      }
+      submit();
       e.preventDefault();
+    }
+  }
+
+  function submit(): void {
+    const trimmed = $userPromptInput.trim();
+      if ($readyForInput) {
+      if (isSlashCommandFormat(trimmed)) {
+        sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: trimmed});
+      }
+      else {
+        sendMessage(BusEvent.ChatIntent, { ...Context.Null, guid } , { content: trimmed});
+      }
+      userPromptInput.set('');
     }
   }
 
@@ -71,3 +75,7 @@
   on:keyup={checkForSubmitKeys}
   style="max-height: 33%;" 
 />
+{#if (Platform.isMobile) }
+  <hr />
+  <button on:click={submit}>{`>>`}</button>
+{/if}
