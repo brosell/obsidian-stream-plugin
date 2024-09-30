@@ -51,11 +51,18 @@ const createDataStores = (guid: string) => {
 
   let g_id = 0;
 
+  // const fileData = writable<string>('');
+  // const chatPoints
+
   const loadChatPoints = (loadData: string): void => {
+    // fileData.set(loadData);
+
     let sd = { chatPoints: [rootCP], activeChatPointId: "0"};
     activeChatPointId.set('');
+
     const index = loadData.indexOf('{');
     if (index !== -1) {
+      frontMatter = loadData.substring(0, index);
       sd = JSON.parse(loadData.substring(index));
     }
      
@@ -179,9 +186,10 @@ const createDataStores = (guid: string) => {
 
   const renderedHtml: Readable<string> = derived(markdown, (markdown: string) => marked(markdown));
 
+  let frontMatter = '';
   // save to file
   const saveData: Readable<string> = derived(chatPoints, (chatPoints: ChatPoint[]) => {
-    const yaml = `---
+    const yaml = frontMatter || `---
 stream: basic
 ---\n\n` + "```\n";
 
