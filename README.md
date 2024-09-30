@@ -10,3 +10,6 @@ This will
 - build the source
 - create a release and tag in the repo
   - Requires GitHub CLI: https://github.com/cli/cli
+
+
+https://github.com/brosell/obsidian-stream-plugin
