@@ -19,6 +19,7 @@ export interface ContextualStores {
   treeDisplay: Readable<ChatPointDisplay[]>,
   chatDisplay: Readable<ChatPointDisplay[]>,
   userPromptInput: Writable<string>,
+  findInput: Writable<string>,
   markdown: Writable<string>,
   renderedHtml: Readable<string>,
   saveData: Readable<string>,
@@ -152,27 +153,29 @@ const createDataStores = (guid: string) => {
     })
   }
 
+  const userPromptInput: Writable<string> = writable('');
+  const findInput = writable('');
+
   const chatPoints: Writable<ChatPoint[]> = writable([] as ChatPoint[]);
   const activeChatPointId: Writable<string> = writable('');
   const activeChatThread: Readable<ChatPoint[]> = derived([activeChatPointId, chatPoints], ([$id, _$chatPoints]) => deriveThread($id));
   const activeChatPoint: Readable<ChatPoint | undefined> = derived(activeChatPointId, id => get(chatPoints).find(cp => cp.id === id));
 
   const selectedChatPoints: Readable<ChatPoint[]> = derived(chatPoints, (chatPoints: ChatPoint[]) => chatPoints.filter(cp => cp.selected));
-
+  const chatPointsWithSearchTerm: Readable<ChatPoint[]> = derived([chatPoints, findInput], ([chatPoints, findInput]) => chatPoints.filter(cp => cp.completions.some(c => c.content.includes(findInput))))
   // UI
   const readyForInput: Writable<boolean> = writable(true);
   const streamedCount: Writable<number> = writable(0);
 
-  const treeDisplay: Readable<ChatPointDisplay[]> = derived(chatPoints, (chatPoints: ChatPoint[]) =>
-    prepareChatPointsForDisplay(chatPoints, (cp: ChatPoint) => chatPointToHtml(cp))
+  const treeDisplay: Readable<ChatPointDisplay[]> = derived([chatPoints, findInput], ([chatPoints, findInput]) =>
+    prepareChatPointsForDisplay(chatPoints, findInput.toLowerCase(), (cp: ChatPoint) => chatPointToHtml(cp))
   )
   
   const chatDisplay: Readable<ChatPointDisplay[]> 
       = derived(activeChatThread, (chatPoints: ChatPoint[]) =>
-    prepareChatPointsForDisplay(chatPoints, (cp: ChatPoint) => chatPointToHtml(cp))
+    prepareChatPointsForDisplay(chatPoints, '', (cp: ChatPoint) => chatPointToHtml(cp))
   )
   
-  const userPromptInput: Writable<string> = writable('');
 
   const markdown: Readable<string> = derived(activeChatThread, (t: ChatPoint[]) => {
     const rfi: boolean = get(readyForInput);
@@ -237,6 +240,7 @@ stream: basic
     treeDisplay,
     chatDisplay,
     userPromptInput,
+    findInput,
     markdown,
     renderedHtml,
     saveData,

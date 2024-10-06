@@ -46,10 +46,12 @@ export interface ChatPointDisplay {
   depth: number;
   displayValue: string;
   chatPoint: ChatPoint;
+  termFound: boolean;
 }
 
 export function prepareChatPointsForDisplay(
   chatPoints: ChatPoint[],
+  searchTerm: string,
   getDisplayValue: (chatPoint: ChatPoint) => string
 ): ChatPointDisplay[] {
   const chatPointMap = new Map<string, ChatPoint>();
@@ -73,17 +75,18 @@ export function prepareChatPointsForDisplay(
     return depth;
   };
 
-  const buildDisplayPoints = (current: ChatPoint, depth: number): ChatPointDisplay[] => {
+  const buildDisplayPoints = (current: ChatPoint, searchTerm: string, depth: number): ChatPointDisplay[] => {
     const displayPoints: ChatPointDisplay[] = [{
       id: current.id,
       depth: depth,
       displayValue: getDisplayValue(current),
-      chatPoint: current
+      chatPoint: current,
+      termFound: !!searchTerm && current.completions.some(c => c.content.toLowerCase().includes(searchTerm))
     }];
     
     const children = chatPoints.filter((cp) => cp.previousId === current.id);
     children.forEach((child) => {
-      displayPoints.push(...buildDisplayPoints(child, depth + 1));
+      displayPoints.push(...buildDisplayPoints(child, searchTerm, depth + 1));
     });
 
     return displayPoints;
@@ -97,7 +100,7 @@ export function prepareChatPointsForDisplay(
       errorBus.set('Root node has a previousId');
       return;
     }
-    chatPointDisplay.push(...buildDisplayPoints(root, computeDepth(root)));
+    chatPointDisplay.push(...buildDisplayPoints(root, searchTerm, computeDepth(root)));
   });
 
   return chatPointDisplay;

@@ -6,9 +6,10 @@
   import { afterUpdate } from "svelte";
   import YAML from "hexo-front-matter";
 	import { getContextualStores } from '../stores/contextual-stores';
+  import type { ChatPointDisplay } from "../services/nested-list-builder";
 
 	export let guid: string;
-	const { treeDisplay, activeChatThread } = getContextualStores(guid);
+	const { findInput, treeDisplay, activeChatThread } = getContextualStores(guid);
 
 	function wrapText(text: string, maxLineLength: number) {
 		const words = text.split(/\s+/);
@@ -30,10 +31,16 @@
 		return lines.join('\n');
 	}
 
+  const getStyle = (cpd: ChatPointDisplay) => {
+    const isActive=activeNodeIds.some(cp => cp === cpd.id);
+    const isFindTermFound = cpd.termFound;
+    const style = isFindTermFound ? "background-color:lightblue" : isActive ? "background-color:pink" : '';
+    return style;
+  }
+
 	$: activeNodeIds = $activeChatThread.map(cp => cp.id);
   $: value = $treeDisplay.reduce((md, item ) => {
-    const isActive=!!activeNodeIds.find(cp => cp === item.id);
-		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} ${item.chatPoint.selected ? '<span style="font-size:20px; color:white; background-color:black;"> &#x1F31F; </span></p>' : ''} - <span title="${(item.chatPoint.summary || '').replaceAll('"', '')}" style="${isActive?"background-color:pink":""}" onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.chatPoint.summary || ''), 30) || 'no summary'}</span>\n`;
+		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} ${item.chatPoint.selected ? '<span style="font-size:20px; color:white; background-color:black;"> &#x1F31F; </span></p>' : ''} - <span title="${(item.chatPoint.summary || '').replaceAll('"', '')}" style="${getStyle(item)}" onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.chatPoint.summary || ''), 30) || 'no summary'}</span>\n`;
 	}, "\n");
 
   let mindmap: SVGSVGElement;
@@ -48,8 +55,6 @@
       /(?<!#)## (.*)\n/g,
       '## <span style="font-weight:bold; font-size:1em; display:block; padding-bottom:0.4em">$1</span>\n'
     );
-    //md = md.replace(/(?<!#)## (.*)\n- /g,'## $1\n- <br>');
-    //md = md.replace(/\n- /g,'\n- <br>');
     return md;
   }
 
@@ -69,12 +74,9 @@
     if (scripts) loadJS(scripts, { getMarkmap: () => markmap });
 
     const options = {
-      //style: id => 'div{padding-bottom:0.25em!important} g g:last-of-type div{font-weight:bold; font-size:18px} foreignObject{overflow:visible!important; transform:translateX(-1%)} g g:last-of-type rect {transform:scaleX(125%) translateX(-3%)}',
-      //style: id => 'div{padding-bottom:0.3em!important} g g:last-of-type div{font-weight:bold;} foreignObject{overflow:visible!important; transform:translateX(-1%)}',
       duration: 0,
       style: () => "div{padding-bottom:0.12em!important}",
       spacingVertical: 8, // 5
-      //spacingHorizontal: 100,
       paddingX: 15, // 8
     };
     mindmap.innerHTML = "";
@@ -93,7 +95,6 @@
     mm =
       '<svg id="markmap" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="' +
       mindmap.className["baseVal"] +
-      // '" style="width: 100%; height: 983px;">' +
       mm +
       "</svg>";
     return mm;
@@ -110,6 +111,12 @@
   }
 </script>
 
+<input
+  class="w-quarter p-2 border-t border-gray-300 resize-y"
+  placeholder="Find..."
+  bind:value={$findInput}
+  style="max-height: 33%;" 
+/>
   <svg
     id="markmap"
     bind:this={mindmap}
