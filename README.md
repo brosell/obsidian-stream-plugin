@@ -20,6 +20,14 @@ Engage in a branching conversation with the OpenAI GPT API using the Obsidian St
   - `/refine()`: Branch the previous chat point and refine the prompt.
   - Additional commands to enhance your interaction.
 
+## Some Excuses
+
+The code one writes when learning new frameworks will not be good for the first few iterations. I suspect that one won't be impressed
+when you look over the Svelte stores and Obsidian integration in the current `main`. It is what it is for a personal project. I'm sort
+of painted into a corner WRT new or imporved features until I'm able to refactor and improve some stuff. One thing that I'm planning
+is to use RxJS Subjects and Observables. They are mostly compatible with Svelte 4 stores and I have a ton of professional expirience
+usin RxJS in my Enterprise Angular day job.
+
 ## Installation
 
 Use the BRAT plugin to install and manage the Obsidian Stream of Consciousness plugin directly from the GitLab repository.
