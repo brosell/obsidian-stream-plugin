@@ -6,6 +6,7 @@ import { BusEvent } from "./bus";
 import { getContextualStores } from "../stores/contextual-stores";
 import { settingsStore } from "../stores/settings";
 import { get } from "svelte/store";
+import { Subject } from "rxjs";
 
 
 
@@ -38,12 +39,18 @@ export class AiInterface {
         }, 
         // { timeout: 5000 },
       );
-      
+
+      const deltas = new Subject<string>();
+      sendMessage(BusEvent.AIStreamDelta, context, { stream: deltas });
+
       let content = '';
       for await (const part of stream) {
         streamedCount.update(n => n + 1);
         content += part.choices[0]?.delta?.content || '';
+        deltas.next(part?.choices[0]?.delta?.content || '');
       }
+
+      deltas.complete();
 
       sendMessage(BusEvent.AIResponseAvailable, context, { content });
       return content;

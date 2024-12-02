@@ -4,6 +4,7 @@ import { ChatRole, type ChatPoint, type Completion } from "../models/chat-point"
 import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
 import { settingsStore } from "../stores/settings";
+import { finalize, scan, tap, type Observable } from "rxjs";
 
 export const subscribeForContext = (guid: string) => {
   let AI: AiInterface;
@@ -19,7 +20,7 @@ export const subscribeForContext = (guid: string) => {
       const { details, context } = message;
       readyForInput.set(false);
       // const cp = addNewChatPoint(details.content, context.referenceId || get(activeChatPointId) || '');
-      const cp = addNewChatPoint(details.content, get(activeChatPointId) || '');
+      const cp = addNewChatPoint(details.content, activeChatPointId.getValue() || '');
 
       activeChatPointId.set(cp.id);
       sendMessage(BusEvent.UserPromptAvailable, { guid, referenceType: 'ChatPoint', referenceId: cp.id }, details.content);
@@ -41,7 +42,7 @@ export const subscribeForContext = (guid: string) => {
         return; // not for us
       }
       const cp = updateChatPoint(context.referenceId, (cp: ChatPoint) => {
-        return {...cp, completions: [...cp.completions, { role: ChatRole.ASSISTANT, content: details.content }]};
+        return {...cp, completions: [...cp.completions.filter(comp => comp.role != ChatRole.ASSISTANT), { role: ChatRole.ASSISTANT, content: details.content }]};
       });
 
       if (autoSUmmarize) {
@@ -52,8 +53,22 @@ export const subscribeForContext = (guid: string) => {
       activeChatPointId.set('');
       activeChatPointId.set(cp!.id);
     },
-  }
+    [BusEvent.AIStreamDelta]: (message: Message) => {
+      const { context, details } = message;
+      const stream: Observable<string> = details.stream;
+      stream.pipe(
+        scan((acc, value) => acc + value),
+        // tap((res) => console.log(res)),
+        finalize(() => console.log('done')),
+        tap(result => {
+          updateChatPoint(context.referenceId, (cp: ChatPoint) => {
+            return {...cp, completions: [...cp.completions.filter(comp => comp.role != ChatRole.ASSISTANT), { role: ChatRole.ASSISTANT, content: result }]};
+          });
+        })
+      ).subscribe();
 
+    } 
+  }
   subscribeToBus(guid, handlers);
 }
 

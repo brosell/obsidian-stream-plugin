@@ -48,7 +48,7 @@ export default class ObsidianStream extends Plugin {
       id: 'toggle-stream-view',
       name: 'Toggle between Stream and markdown mode',
       callback: () => {
-				const file = app.workspace.getActiveFile();
+				const file = this.app.workspace.getActiveFile();
 				if (!file) {
 					return;
 				}
