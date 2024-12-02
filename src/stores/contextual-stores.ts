@@ -5,18 +5,25 @@ import { NoopMessage as NoopMessage, type BusEvent, type Message, type MessageCo
 import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
-import { BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, tap, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, Subject, tap, withLatestFrom } from 'rxjs';
 
-export class SvelteSubject<T> extends BehaviorSubject<T> {
+export class SvelteBehaviorSubject<T> extends BehaviorSubject<T> {
   set(v: T) {
     this.next(v);
   }
 }
 
+export class SvelteSubject<T> extends Subject<T> {
+  set(v: T)  {
+    this.next(v);
+  }
+}
+
+
 export interface ContextualStores {
-  bus: Writable<Message>,
+  bus: SvelteSubject<Message>,
   chatPoints: Observable<ChatPoint[]>,
-  activeChatPointId: SvelteSubject<string | null>,
+  activeChatPointId: SvelteBehaviorSubject<string | null>,
   activeChatThread: Observable<ChatPoint[]>,
   activeChatPoint: Observable<ChatPoint | undefined>,
   selectedChatPoints: Observable<ChatPoint[]>,
@@ -144,8 +151,8 @@ const createDataStores = (guid: string) => {
   const userPromptInput: Writable<string> = writable('');
   const findInput = writable('');
 
-  const chatPoints = new SvelteSubject([] as ChatPoint[]);
-  const activeChatPointId = new SvelteSubject('');
+  const chatPoints = new SvelteBehaviorSubject([] as ChatPoint[]);
+  const activeChatPointId = new SvelteBehaviorSubject('');
   const activeChatPoint = combineLatest([chatPoints, activeChatPointId]).pipe(
     filter(([_, acp]) => !!acp),
     map(([cps, aid]) => cps.find(cp => cp.id == aid)!) 
@@ -209,7 +216,7 @@ stream: basic
   );
 
   // Bus
-  const bus = writable<Message>(NoopMessage);
+  const bus = new SvelteBehaviorSubject<Message>(NoopMessage);
   bus.subscribe((message: Message) => {
     console.log('bus message', message);
   });
