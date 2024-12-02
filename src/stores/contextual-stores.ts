@@ -5,7 +5,7 @@ import { NoopMessage as NoopMessage, type BusEvent, type Message, type MessageCo
 import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
-import { BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, Subject, tap, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, startWith, Subject, tap, withLatestFrom } from 'rxjs';
 
 export class SvelteBehaviorSubject<T> extends BehaviorSubject<T> {
   set(v: T) {
@@ -27,15 +27,18 @@ export interface ContextualStores {
   activeChatThread: Observable<ChatPoint[]>,
   activeChatPoint: Observable<ChatPoint | undefined>,
   selectedChatPoints: Observable<ChatPoint[]>,
+  treeDisplay: Observable<ChatPointDisplay[]>,
+  chatDisplay: Observable<ChatPointDisplay[]>,
+  renderedHtml: Observable<string>,
+  saveData: Observable<string>,
+
+  findInput: Subject<string>,
+  markdown: Observable<string>,
+  
+  userPromptInput: Writable<string>,
   readyForInput: Writable<boolean>,
   streamedCount: Writable<number>,
-  treeDisplay: Readable<ChatPointDisplay[]>,
-  chatDisplay: Observable<ChatPointDisplay[]>,
-  userPromptInput: Writable<string>,
-  findInput: Writable<string>,
-  markdown: Writable<string>,
-  renderedHtml: Readable<string>,
-  saveData: Readable<string>,
+  
   loadChatPoints: (loadData: string) => void,
   addNewChatPoint: (content: string, previousId?: string, role?: ChatRole) => ChatPoint,
   getChatPoint: (id: string) => ChatPoint | undefined,
@@ -149,7 +152,7 @@ const createDataStores = (guid: string) => {
   // }
 
   const userPromptInput: Writable<string> = writable('');
-  const findInput = writable('');
+  const findInput = new SvelteSubject<string>();
 
   const chatPoints = new SvelteBehaviorSubject([] as ChatPoint[]);
   const activeChatPointId = new SvelteBehaviorSubject('');
@@ -167,7 +170,16 @@ const createDataStores = (guid: string) => {
 
   const selectedChatPoints: Observable<ChatPoint[]> = chatPoints.pipe(map(cps => cps.filter(cp => cp.selected)));
 
-  const chatPointsWithSearchTerm: Observable<ChatPoint[]> = of([]); //derived([chatPoints, findInput], ([chatPoints, findInput]) => chatPoints.filter(cp => cp.completions.some(c => c.content.includes(findInput))))
+  const chatPointsWithSearchTerm: Observable<ChatPoint[]> = combineLatest([
+    chatPoints, 
+    findInput.pipe(
+      debounceTime(250),
+      distinctUntilChanged()
+    )]
+  ).pipe(
+    map(([chatPoints, findInput])  => chatPoints.filter(cp => cp.completions.some(c => c.content.includes(findInput))))
+  );
+
   // UI
   const readyForInput: Writable<boolean> = writable(true);
   const streamedCount: Writable<number> = writable(0);
