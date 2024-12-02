@@ -19,7 +19,7 @@ export const subscribeForContext = (guid: string) => {
       const { details, context } = message;
       readyForInput.set(false);
       // const cp = addNewChatPoint(details.content, context.referenceId || get(activeChatPointId) || '');
-      const cp = addNewChatPoint(details.content, get(activeChatPointId) || '');
+      const cp = addNewChatPoint(details.content, activeChatPointId.getValue() || '');
 
       activeChatPointId.set(cp.id);
       sendMessage(BusEvent.UserPromptAvailable, { guid, referenceType: 'ChatPoint', referenceId: cp.id }, details.content);

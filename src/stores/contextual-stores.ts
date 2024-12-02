@@ -16,7 +16,7 @@ export class SvelteSubject<T> extends BehaviorSubject<T> {
 export interface ContextualStores {
   bus: Writable<Message>,
   chatPoints: Observable<ChatPoint[]>,
-  activeChatPointId: Observable<string | null>,
+  activeChatPointId: SvelteSubject<string | null>,
   activeChatThread: Observable<ChatPoint[]>,
   activeChatPoint: Observable<ChatPoint | undefined>,
   selectedChatPoints: Observable<ChatPoint[]>,
@@ -99,18 +99,25 @@ const createDataStores = (guid: string) => {
 
   const updateChatPoint = (chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint): ChatPoint | undefined => {
     const arr = chatPoints.getValue().map(cp => cp.id == chatPointId ? updater({ ...cp }) : cp );
-   
+    chatPoints.next(arr);
     return arr.find(cp => cp.id == chatPointId);
   }
 
-  const deriveThread = (leafNode: ChatPoint, arr: ChatPoint[]): ChatPoint[] => {
+  const deriveThread = (leafNode: string, arr?: ChatPoint[]): ChatPoint[] => {
     const answer = [] as ChatPoint[];
 
-    answer.unshift(leafNode);
-    let node: ChatPoint = leafNode
-    while (node.previousId) {
+    if (!arr) {
+      arr = chatPoints.getValue();
+    }
+
+    let node = arr.find(cp => cp.id === leafNode)!;
+    answer.unshift(node);
+
+    while (node?.previousId) {
       node = arr.find(cp => cp.id === node.previousId)!;
-      answer.unshift(node);
+      if (node) {
+        answer.unshift(node);
+      }
     }
     return answer;
   }
@@ -144,7 +151,8 @@ const createDataStores = (guid: string) => {
     map(([cps, aid]) => cps.find(cp => cp.id == aid)!) 
   );
 
-  const activeChatThread: Observable<ChatPoint[]> = combineLatest([activeChatPoint, chatPoints]).pipe(
+  const activeChatThread: Observable<ChatPoint[]> = combineLatest([activeChatPointId, chatPoints]).pipe(
+    filter(([acp]) => !!acp),
     map(([acp, cps]) => deriveThread(acp, cps))
   );
 
