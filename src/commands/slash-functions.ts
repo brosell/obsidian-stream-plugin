@@ -1,10 +1,26 @@
-import { get } from "svelte/store";
 import { BusEvent, Context, errorBus, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion, chatPointToMarkdown } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
 import { settingsStore } from "../stores/settings";
 import prompts from "../models/prompts";
+import { Subject, take, takeUntil, tap, type Observable } from "rxjs";
+
+function get<T>(store: Observable<T>): T {
+  let value = <T>null; 
+  const stopper = new Subject<void>();
+  store.pipe(
+    take(1),
+    takeUntil(stopper),
+    tap((result) => value = result),
+  ).subscribe();
+
+  stopper.next();
+  stopper.complete();
+  return value;
+}
+
+
 
 export const subscribeSlashCommandsForContext = (guid: string) => {
   const { activeChatPointId, activeChatPoint, activeChatThread, chatPoints, userPromptInput, 
@@ -16,6 +32,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
     AI = new AiInterface(100, settings.SUMMARY_MODEL || 'gpt-3.5-turbo' );
   });
 
+  
   
   const slashFunctions: Record<string, (c: string[]) => void> = {
     setThread: (args: string[]) => {
@@ -43,6 +60,10 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
         return;
       }
       const thread = get(activeChatThread) as ChatPoint[];
+      if (!thread) {
+        return;
+      }
+      
       const currentThreadIds = [...thread.map((cp: ChatPoint) => cp.id)].reverse();
       activeChatPointId.set('');
       deleteChatPointAndDescendants(idToDelete);

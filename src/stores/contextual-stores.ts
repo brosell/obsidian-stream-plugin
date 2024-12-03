@@ -96,16 +96,22 @@ const createDataStores = (guid: string) => {
     return chatPoints.getValue().find(cp => cp.id == id);
   }
 
-  // const forkChatPoint = (chatPointId: string) => {
-  //   const source = getChatPoint(chatPointId) || get(activeChatPoint);
-  //   if (!source) {
-  //     errorBus.set(`tried to fork nonexistent ChatPoint with id: ${chatPointId}`);
-  //     return;
-  //   }
-  //   const newCP: ChatPoint = { ...source, id: `${g_id++}`, previousId: '', completions: [...source.completions] };
-  //   chatPoints.next([...chatPoints.getValue(), newCP]);
-  //   activeChatPointId.set(newCP.id);
-  // }
+  const forkChatPoint = (chatPointId: string) => {
+    of(0).pipe(
+      withLatestFrom(activeChatPoint),
+      map(([_, acp]) => acp),
+      tap((activeChatPoint) => {
+        const source = getChatPoint(chatPointId) || activeChatPoint;
+        if (!source) {
+          errorBus.set(`tried to fork nonexistent ChatPoint with id: ${chatPointId}`);
+          return;
+        }
+        const newCP: ChatPoint = { ...source, id: `${g_id++}`, previousId: '', completions: [...source.completions] };
+        chatPoints.next([...chatPoints.getValue(), newCP]);
+        activeChatPointId.set(newCP.id);
+      })
+    ).subscribe();
+  }
 
   const updateChatPoint = (chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint): ChatPoint | undefined => {
     const arr = chatPoints.getValue().map(cp => cp.id == chatPointId ? updater({ ...cp }) : cp );
@@ -132,24 +138,24 @@ const createDataStores = (guid: string) => {
     return answer;
   }
 
-  // const deleteChatPointAndDescendants = (idToDelete: string): void => {
-  //   chatPoints.update(chatPoints => {
-  //     const chatPointIdsToDelete = new Set<string>();
-  //     chatPointIdsToDelete.add(idToDelete);
+  const deleteChatPointAndDescendants = (idToDelete: string): void => {
+    const cps = chatPoints.getValue();
 
-  //     let currentSize: number;
-  //     do {
-  //       currentSize = chatPointIdsToDelete.size;
-  //       chatPoints.forEach((chatPoint) => {
-  //         if (chatPoint.previousId && chatPointIdsToDelete.has(chatPoint.previousId)) {
-  //           chatPointIdsToDelete.add(chatPoint.id);
-  //         }
-  //       });
-  //     } while (chatPointIdsToDelete.size > currentSize);
+    const chatPointIdsToDelete = new Set<string>();
+    chatPointIdsToDelete.add(idToDelete);
 
-  //     return chatPoints.filter(chatPoint => !chatPointIdsToDelete.has(chatPoint.id));
-  //   })
-  // }
+    let currentSize: number;
+    do {
+      currentSize = chatPointIdsToDelete.size;
+      cps.forEach((chatPoint) => {
+        if (chatPoint.previousId && chatPointIdsToDelete.has(chatPoint.previousId)) {
+          chatPointIdsToDelete.add(chatPoint.id);
+        }
+      });
+    } while (chatPointIdsToDelete.size > currentSize);
+
+    chatPoints.next(cps.filter(chatPoint => !chatPointIdsToDelete.has(chatPoint.id)));
+  }
 
   const userPromptInput: Writable<string> = writable('');
   const findInput = new SvelteSubject<string>();
@@ -249,10 +255,10 @@ stream: basic
     loadChatPoints,
     addNewChatPoint,
     getChatPoint,
-    // forkChatPoint,
+    forkChatPoint,
     updateChatPoint,
     deriveThread,
-    // deleteChatPointAndDescendants,
+    deleteChatPointAndDescendants,
     sendMessage,
     subscribeToBus,
     bus,
