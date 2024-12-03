@@ -4,19 +4,15 @@ import { getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
 import { settingsStore } from "../stores/settings";
 import prompts from "../models/prompts";
-import { Subject, take, takeUntil, tap, type Observable } from "rxjs";
+import { of, Subject, take, takeUntil, tap, withLatestFrom, type Observable } from "rxjs";
 
 function get<T>(store: Observable<T>): T {
   let value = <T>null; 
-  const stopper = new Subject<void>();
-  store.pipe(
-    take(1),
-    takeUntil(stopper),
-    tap((result) => value = result),
+  
+  of(0).pipe(
+    withLatestFrom(store),
+    tap(([_, result]) => value = result),
   ).subscribe();
-
-  stopper.next();
-  stopper.complete();
   return value;
 }
 
@@ -63,7 +59,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       if (!thread) {
         return;
       }
-      
+
       const currentThreadIds = [...thread.map((cp: ChatPoint) => cp.id)].reverse();
       activeChatPointId.set('');
       deleteChatPointAndDescendants(idToDelete);
