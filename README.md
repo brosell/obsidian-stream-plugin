@@ -53,7 +53,7 @@ The user must provide their OpenAI API key. The capability to use local LLMs via
 ## Limitations and Known Issues
 
 - Expect bugs as the UI is under development.
-- Incompatibility with OpenAI's new o1 models, with a fix planned.
+- Not compatibility with OpenAI's new o1 models, with a fix planned.
 - Tested models: gpt-3.5-turbo, gpt-4, gpt-4o.
 
 ## Contributing
@@ -72,6 +72,20 @@ For support, please use GitHub issues and PRs for reporting bugs and requesting 
 
 ![image](https://github.com/user-attachments/assets/2c266d96-77cb-4de2-a1af-6e63c21d3eb6)
 
+
+## Roadmap items
+- [x] RxJS-iffy
+- [ ] refactor command bus to be more RxJS-y
+- [ ] Interesting chat and thread management
+  - [ ] deep link to a chat point
+  - [ ] move a thread to a new note
+  - [ ] reference other threads or notes in a RAG-like way
+  - [ ] 'gaslight' mode
+- [ ] Propper RAG
+- [ ] UI and Ux enhancements
+  - [ ] improved map view
+  - [ ] drag and drop chat to re organize
+- [ ] 
 
 # To release
 - Make sure the current origin HEAD is behaving
