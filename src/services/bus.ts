@@ -6,6 +6,8 @@ export enum BusEvent {
   ChatIntent = 'ChatIntent',
   UserPromptAvailable = 'UserPromptReady',
   AIResponseAvailable = 'AIResponseReady',
+  AIStreamDelta = 'AIStreamDelta',
+
   SlashFunction = 'SlashFunction',
 }
 
