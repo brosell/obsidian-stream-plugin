@@ -1,280 +1,235 @@
-import { writable, derived, get, type Writable, type Readable } from 'svelte/store';
+import { writable, get as svGet, type Writable } from 'svelte/store';
 import { ChatRole, chatPointToHtml, type ChatPoint } from '../models/chat-point';
 import { prepareChatPointsForDisplay, type ChatPointDisplay } from '../services/nested-list-builder';
-import { NoopMessage as NoopMessage, type BusEvent, type Message, type MessageContext, errorBus } from '../services/bus';
+import { NoopMessage, type BusEvent, type Message, type MessageContext, errorBus } from '../services/bus';
 import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, startWith, Subject, tap, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, Subject, tap, withLatestFrom } from 'rxjs';
 
 export class SvelteBehaviorSubject<T> extends BehaviorSubject<T> {
-  set(v: T) {
-    this.next(v);
+  set(value: T) {
+    this.next(value);
   }
 }
 
 export class SvelteSubject<T> extends Subject<T> {
-  set(v: T)  {
-    this.next(v);
+  set(value: T) {
+    this.next(value);
   }
 }
 
-
-export interface ContextualStores {
-  bus: SvelteSubject<Message>,
-  chatPoints: Observable<ChatPoint[]>,
-  activeChatPointId: SvelteBehaviorSubject<string | null>,
-  activeChatThread: Observable<ChatPoint[]>,
-  activeChatPoint: Observable<ChatPoint | undefined>,
-  selectedChatPoints: Observable<ChatPoint[]>,
-  treeDisplay: Observable<ChatPointDisplay[]>,
-  chatDisplay: Observable<ChatPointDisplay[]>,
-  renderedHtml: Observable<string>,
-  saveData: Observable<string>,
-
-  findInput: Subject<string>,
-  markdown: Observable<string>,
+export function get<T>(store: Observable<T>): T {
+  let value = <T>null; 
   
-  userPromptInput: Writable<string>,
-  readyForInput: Writable<boolean>,
-  streamedCount: Writable<number>,
-  
-  loadChatPoints: (loadData: string) => void,
-  addNewChatPoint: (content: string, previousId?: string, role?: ChatRole) => ChatPoint,
-  getChatPoint: (id: string) => ChatPoint | undefined,
-  forkChatPoint: (chatPointId: string) => void,
-  updateChatPoint: (chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint) => ChatPoint,
-  deriveThread: (leafId: string) => ChatPoint[],
-  deleteChatPointAndDescendants: (idToDelete: string) => void,
-  sendMessage: (event: BusEvent, context?: MessageContext, details?: any) => void,
-  subscribeToBus: (event: string, handler: Record<string, (m: Message) => void>) => void,
+  of(0).pipe(
+    withLatestFrom(store),
+    tap(([_, result]) => value = result),
+  ).subscribe();
+  return value;
 }
 
+const storeInstances: Map<string, ContextualStores> = new Map();
 
-const storeInstances: Map<string, any> = new Map();
-export const getContextualStores = (guid: string): ContextualStores => {
-  if (!storeInstances.has(guid)) {
-    storeInstances.set(guid, createDataStores(guid));
+export class ContextualStores {
+  bus: SvelteSubject<Message>;
+  chatPoints: SvelteBehaviorSubject<ChatPoint[]>;
+  activeChatPointId: SvelteBehaviorSubject<string | null>;
+  activeChatThread: Observable<ChatPoint[]>;
+  activeChatPoint: Observable<ChatPoint | undefined>;
+  selectedChatPoints: Observable<ChatPoint[]>;
+  treeDisplay: Observable<ChatPointDisplay[]>;
+  chatDisplay: Observable<ChatPointDisplay[]>;
+  renderedHtml: Observable<string>;
+  saveData: Observable<string>;
+
+  findInput: SvelteSubject<string>;
+  markdown: Observable<string>;
+  
+  userPromptInput: Writable<string>;
+  readyForInput: Writable<boolean>;
+  streamedCount: Writable<number>;
+
+  private idCounter: number = 0;
+  private frontMatter: string = '';
+  private searchSubject: SvelteSubject<string>;
+
+  constructor(guid: string) {
+    this.bus = new SvelteBehaviorSubject<Message>(NoopMessage);
+    this.chatPoints = new SvelteBehaviorSubject<ChatPoint[]>([]);
+    this.activeChatPointId = new SvelteBehaviorSubject<string | null>(null);
+    this.userPromptInput = writable('');
+    this.readyForInput = writable(true);
+    this.streamedCount = writable(0);
+    this.findInput = new SvelteSubject<string>();
+    this.searchSubject = new SvelteSubject<string>();
+
+    this.activeChatPoint = combineLatest([this.chatPoints, this.activeChatPointId]).pipe(
+      filter(([_, activeId]) => !!activeId),
+      map(([chatPoints, activeId]) => chatPoints.find(chatPoint => chatPoint.id == activeId))
+    );
+
+    this.activeChatThread = combineLatest([this.activeChatPointId, this.chatPoints]).pipe(
+      filter(([activeId]) => !!activeId),
+      map(([activeId, chatPoints]) => this.deriveThread(activeId!, chatPoints))
+    );
+
+    this.selectedChatPoints = this.chatPoints.pipe(map(chatPoints => chatPoints.filter(chatPoint => chatPoint.selected)));
+
+    this.treeDisplay = this.chatPoints.pipe(
+      map(chatPoints => prepareChatPointsForDisplay(chatPoints, '', (chatPoint: ChatPoint) => chatPointToHtml(chatPoint)))
+    );
+
+    this.chatDisplay = this.activeChatThread.pipe(
+      startWith([]),
+      tap((result) => console.log('chatDisplay', result)),
+      map(chatPoints => prepareChatPointsForDisplay(chatPoints, '', (chatPoint: ChatPoint) => chatPointToHtml(chatPoint)))
+    );
+
+    this.markdown = this.activeChatThread.pipe(
+      map((chatPoints: ChatPoint[]) => {
+        const readyForInput: boolean = svGet(this.readyForInput);
+      
+        const markdownContent: string = chatPoints.map(chatPoint => {
+          const completionsMarkdown: string = chatPoint.completions.map(completion => `**${completion.role}**:\n\n${completion.content}`).join('\n\n');
+          return `### ${chatPoint.id}\n${completionsMarkdown}`;
+        }).join('\n\n');
+        return `${markdownContent}\n\n---\n ${!readyForInput ? '==waiting for response...==' : ''}`;
+      })
+    );
+
+    this.renderedHtml = this.markdown.pipe(
+      map((markdown: string) => marked(markdown))
+    );
+
+    this.saveData = combineLatest([this.chatPoints, this.activeChatPointId]).pipe(
+      map(([chatPoints, activeChatPointId]) => {
+        const yaml = this.frontMatter || `---\nstream: basic\n---\n\n\`\`\`\n`;
+
+        const saveData = { chatPoints, activeChatPointId };
+        const json = JSON.stringify(saveData, null, 2);
+        return yaml + json;
+      })
+    );
+
+    storeInstances.set(guid, this);
     subscribeForContext(guid);
     subscribeSlashCommandsForContext(guid);
+
+    // Initial load
+    this.loadChatPoints('');
+    this.bus.subscribe((message: Message) => {
+      console.log('bus message', message);
+    });
   }
-  return storeInstances.get(guid);
-}
 
+  // Define all the methods implementing ContextualStores here
 
-
-const createDataStores = (guid: string) => {
-  const rootCP: ChatPoint = {previousId: '', id: '0', completions: [{ role: ChatRole.SYSTEM, content: 'You are a Helpful assistant for coding and other tasks' } ]};
-
-  let g_id = 0;
-
-  const loadChatPoints = (loadData: string): void => {
-
-    let sd = { chatPoints: [rootCP], activeChatPointId: "0"};
-    activeChatPointId.set('');
+  loadChatPoints(loadData: string): void {
+    let parsedData = { chatPoints: [{previousId: '', id: '0', completions: [{ role: ChatRole.SYSTEM, content: 'You are a Helpful assistant for coding and other tasks' } ]}], activeChatPointId: "0" };
+    this.activeChatPointId.set('');
 
     const index = loadData.indexOf('{');
     if (index !== -1) {
-      frontMatter = loadData.substring(0, index);
-      sd = JSON.parse(loadData.substring(index));
+      this.frontMatter = loadData.substring(0, index);
+      parsedData = JSON.parse(loadData.substring(index));
     }
-     
-    chatPoints.set(sd.chatPoints);
-    if (sd.activeChatPointId !== '') {
-      activeChatPointId.set(sd.activeChatPointId);
+    
+    this.chatPoints.set(parsedData.chatPoints);
+    if (parsedData.activeChatPointId !== '') {
+      this.activeChatPointId.set(parsedData.activeChatPointId);
     }
-    g_id = Math.max(...sd.chatPoints.map((cp: { id: string; }) => parseInt(cp.id))) + 1;
+    this.idCounter = Math.max(...parsedData.chatPoints.map((cp: { id: string; }) => parseInt(cp.id))) + 1;
   }
 
-  const addNewChatPoint = (content: string, previousId: string = '', role: ChatRole = ChatRole.USER) => {
-    const child: ChatPoint = { id: `${g_id++}`, previousId, completions: [{ role, content }] };
-    chatPoints.next([...chatPoints.getValue(), child]);
-    return child;
-  }
-  
-  const getChatPoint = (id: string): ChatPoint | undefined => {
-    return chatPoints.getValue().find(cp => cp.id == id);
+  addNewChatPoint(content: string, previousId: string = '', role: ChatRole = ChatRole.USER): ChatPoint {
+    const newChatPoint: ChatPoint = { id: `${this.idCounter++}`, previousId, completions: [{ role, content }] };
+    this.chatPoints.next([...this.chatPoints.getValue(), newChatPoint]);
+    return newChatPoint;
   }
 
-  const forkChatPoint = (chatPointId: string) => {
+  getChatPoint(id: string): ChatPoint | undefined {
+    return this.chatPoints.getValue().find(chatPoint => chatPoint.id == id);
+  }
+
+  forkChatPoint(chatPointId: string): void {
     of(0).pipe(
-      withLatestFrom(activeChatPoint),
-      map(([_, acp]) => acp),
-      tap((activeChatPoint) => {
-        const source = getChatPoint(chatPointId) || activeChatPoint;
+      withLatestFrom(this.activeChatPoint),
+      map(([_, activeChatPoint]) => activeChatPoint),
+      tap((currentActiveChatPoint) => {
+        const source = this.getChatPoint(chatPointId) || currentActiveChatPoint;
         if (!source) {
           errorBus.set(`tried to fork nonexistent ChatPoint with id: ${chatPointId}`);
           return;
         }
-        const newCP: ChatPoint = { ...source, id: `${g_id++}`, previousId: '', completions: [...source.completions] };
-        chatPoints.next([...chatPoints.getValue(), newCP]);
-        activeChatPointId.set(newCP.id);
+        const newChatPoint: ChatPoint = { ...source, id: `${this.idCounter++}`, previousId: '', completions: [...source.completions] };
+        this.chatPoints.next([...this.chatPoints.getValue(), newChatPoint]);
+        this.activeChatPointId.set(newChatPoint.id);
       })
     ).subscribe();
   }
 
-  const updateChatPoint = (chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint): ChatPoint | undefined => {
-    const arr = chatPoints.getValue().map(cp => cp.id == chatPointId ? updater({ ...cp }) : cp );
-    chatPoints.next(arr);
-    return arr.find(cp => cp.id == chatPointId);
+  updateChatPoint(chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint): ChatPoint | undefined {
+    const updatedChatPoints = this.chatPoints.getValue().map(chatPoint => chatPoint.id == chatPointId ? updater({ ...chatPoint }) : chatPoint );
+    this.chatPoints.next(updatedChatPoints);
+    return updatedChatPoints.find(updatedChatPoint => updatedChatPoint.id == chatPointId);
   }
 
-  const deriveThread = (leafNode: string, arr?: ChatPoint[]): ChatPoint[] => {
-    const answer = [] as ChatPoint[];
+  deriveThread(leafNodeId: string, chatPointsList?: ChatPoint[]): ChatPoint[] {
+    const thread: ChatPoint[] = [];
 
-    if (!arr) {
-      arr = chatPoints.getValue();
+    if (!chatPointsList) {
+      chatPointsList = this.chatPoints.getValue();
     }
 
-    let node = arr.find(cp => cp.id === leafNode)!;
-    answer.unshift(node);
+    let currentNode = chatPointsList.find(chatPoint => chatPoint.id === leafNodeId)!;
+    thread.unshift(currentNode);
 
-    while (node?.previousId) {
-      node = arr.find(cp => cp.id === node.previousId)!;
-      if (node) {
-        answer.unshift(node);
+    while (currentNode?.previousId) {
+      currentNode = chatPointsList.find(chatPoint => chatPoint.id === currentNode.previousId)!;
+      if (currentNode) {
+        thread.unshift(currentNode);
       }
     }
-    return answer;
+    return thread;
   }
 
-  const deleteChatPointAndDescendants = (idToDelete: string): void => {
-    const cps = chatPoints.getValue();
+  deleteChatPointAndDescendants(idToDelete: string): void {
+    const existingChatPoints = this.chatPoints.getValue();
 
-    const chatPointIdsToDelete = new Set<string>();
-    chatPointIdsToDelete.add(idToDelete);
+    const idsToDelete = new Set<string>();
+    idsToDelete.add(idToDelete);
 
     let currentSize: number;
     do {
-      currentSize = chatPointIdsToDelete.size;
-      cps.forEach((chatPoint) => {
-        if (chatPoint.previousId && chatPointIdsToDelete.has(chatPoint.previousId)) {
-          chatPointIdsToDelete.add(chatPoint.id);
+      currentSize = idsToDelete.size;
+      existingChatPoints.forEach((chatPoint) => {
+        if (chatPoint.previousId && idsToDelete.has(chatPoint.previousId)) {
+          idsToDelete.add(chatPoint.id);
         }
       });
-    } while (chatPointIdsToDelete.size > currentSize);
+    } while (idsToDelete.size > currentSize);
 
-    chatPoints.next(cps.filter(chatPoint => !chatPointIdsToDelete.has(chatPoint.id)));
+    this.chatPoints.next(existingChatPoints.filter(chatPoint => !idsToDelete.has(chatPoint.id)));
   }
 
-  const userPromptInput: Writable<string> = writable('');
-  const findInput = new SvelteSubject<string>();
-
-  const chatPoints = new SvelteBehaviorSubject([] as ChatPoint[]);
-  const activeChatPointId = new SvelteBehaviorSubject('');
-  const activeChatPoint = combineLatest([chatPoints, activeChatPointId]).pipe(
-    filter(([_, acp]) => !!acp),
-    map(([cps, aid]) => cps.find(cp => cp.id == aid)!) 
-  );
-
-  const activeChatThread: Observable<ChatPoint[]> = combineLatest([activeChatPointId, chatPoints]).pipe(
-    filter(([acp]) => !!acp),
-    map(([acp, cps]) => deriveThread(acp, cps))
-  );
-
-  
-
-  const selectedChatPoints: Observable<ChatPoint[]> = chatPoints.pipe(map(cps => cps.filter(cp => cp.selected)));
-
-  const chatPointsWithSearchTerm: Observable<ChatPoint[]> = combineLatest([
-    chatPoints, 
-    findInput.pipe(
-      debounceTime(250),
-      distinctUntilChanged()
-    )]
-  ).pipe(
-    map(([chatPoints, findInput])  => chatPoints.filter(cp => cp.completions.some(c => c.content.includes(findInput))))
-  );
-
-  // UI
-  const readyForInput: Writable<boolean> = writable(true);
-  const streamedCount: Writable<number> = writable(0);
-
-  const treeDisplay: Observable<ChatPointDisplay[]> = chatPoints.pipe(
-    map(chatPoints => prepareChatPointsForDisplay(chatPoints, '', (cp: ChatPoint) => chatPointToHtml(cp)))
-  );
-  
-  const chatDisplay: Observable<ChatPointDisplay[]> = activeChatThread.pipe(
-    startWith([]),
-    tap((result) => console.log('chatDisplay', result)),
-    map(chatPoints => prepareChatPointsForDisplay(chatPoints, '', (cp: ChatPoint) => chatPointToHtml(cp)))
-  );
-  
-
-  const markdown = activeChatThread.pipe(
-    map((t: ChatPoint[]) => {
-      const rfi: boolean = get(readyForInput);
-    
-      const md: string = t.map(item => {
-        const completionsMarkdown: string = item.completions.map(completion => `**${completion.role}**:\n\n${completion.content}`).join('\n\n');
-        return `### ${item.id}\n${completionsMarkdown}`;
-      }).join('\n\n');
-      return `${md}\n\n---\n ${!rfi ? '==waiting for response...==' : ''}`;
-    })
-  );
-
-  const renderedHtml = markdown.pipe(
-    map((markdown: string) => marked(markdown))
-  );
-
-  const defaultFrontMatter = `---
-stream: basic
----\n\n`;
-
-  let frontMatter = '';
-  // save to file
-  const saveData = combineLatest([chatPoints, activeChatPointId]).pipe(
-    map(([chatPoints, activeChatPointId]) => {
-      const yaml = frontMatter || defaultFrontMatter + "```\n";
-
-      const sd = {chatPoints, activeChatPointId};
-      const json = JSON.stringify(sd, null, 2);
-      return yaml + json;
-    })
-  );
-
-  // Bus
-  const bus = new SvelteBehaviorSubject<Message>(NoopMessage);
-  bus.subscribe((message: Message) => {
-    console.log('bus message', message);
-  });
-  
-  const sendMessage = (event: BusEvent, context: MessageContext, details: any = {}) => {
-    bus.set({event, context, details});
+  sendMessage(event: BusEvent, context: MessageContext, details: any = {}) {
+    this.bus.set({ event, context, details });
   }
 
-  const subscribeToBus = (guid: string, handlers: Record<string, (m: Message) => void>) => {
-    bus.subscribe( (message: Message) => {
+  subscribeToBus(guid: string, handlers: Record<string, (message: Message) => void>) {
+    this.bus.subscribe( (message: Message) => {
       if (message && message.context.guid === guid && handlers[message.event]) {
         handlers[message.event](message);
       }
     });
   }
-
-  return {
-    loadChatPoints,
-    addNewChatPoint,
-    getChatPoint,
-    forkChatPoint,
-    updateChatPoint,
-    deriveThread,
-    deleteChatPointAndDescendants,
-    sendMessage,
-    subscribeToBus,
-    bus,
-    chatPoints,
-    activeChatPointId,
-    activeChatThread,
-    activeChatPoint,
-    selectedChatPoints,
-    readyForInput,
-    streamedCount,
-    treeDisplay,
-    chatDisplay,
-    userPromptInput,
-    findInput,
-    markdown,
-    renderedHtml,
-    saveData,
-  }
 }
+
+// Usage
+export const getContextualStores = (guid: string): ContextualStores => {
+  if (!storeInstances.has(guid)) {
+    storeInstances.set(guid, new ContextualStores(guid));
+  }
+  return storeInstances.get(guid)!;
+};

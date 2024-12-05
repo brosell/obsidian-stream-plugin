@@ -7,7 +7,8 @@
 
   export let guid: string;
 
-  const { userPromptInput, readyForInput, sendMessage, bus } = getContextualStores(guid);
+  const stores = getContextualStores(guid);
+  const { userPromptInput, readyForInput } = stores;
   let textArea: HTMLTextAreaElement;
 
   onMount(() => {
@@ -52,12 +53,12 @@
     const trimmed = $userPromptInput.trim();
       if ($readyForInput) {
       if (isSlashCommandFormat(trimmed)) {
-        sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: trimmed});
+        stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: trimmed});
       }
       else {
-        sendMessage(BusEvent.ChatIntent, { ...Context.Null, guid } , { content: trimmed});
+        stores.sendMessage(BusEvent.ChatIntent, { ...Context.Null, guid } , { content: trimmed});
       }
-      userPromptInput.set('');
+      stores.userPromptInput.set('');
     }
   }
 

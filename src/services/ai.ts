@@ -25,7 +25,8 @@ export class AiInterface {
   get count() { return this._count; }
 
   async prompt(completions: Completion[], context: any): Promise<string> {
-    const { sendMessage, streamedCount } = getContextualStores(context.guid);
+    const stores = getContextualStores(context.guid)
+    const { streamedCount } = stores;
     streamedCount.set(0);
     if (this.count > this.safetyNet) {
       throw "out of calls";
@@ -41,7 +42,7 @@ export class AiInterface {
       );
 
       const deltas = new Subject<string>();
-      sendMessage(BusEvent.AIStreamDelta, context, { stream: deltas });
+      stores.sendMessage(BusEvent.AIStreamDelta, context, { stream: deltas });
 
       let content = '';
       for await (const part of stream) {
@@ -52,7 +53,7 @@ export class AiInterface {
 
       deltas.complete();
 
-      sendMessage(BusEvent.AIResponseAvailable, context, { content });
+      stores.sendMessage(BusEvent.AIResponseAvailable, context, { content });
       return content;
     } catch (error) {
       return `FALSE -${error}`;

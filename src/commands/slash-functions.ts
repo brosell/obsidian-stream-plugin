@@ -1,90 +1,73 @@
 import { BusEvent, Context, errorBus, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion, chatPointToMarkdown } from "../models/chat-point";
-import { getContextualStores } from "../stores/contextual-stores";
+import { get, getContextualStores } from "../stores/contextual-stores";
 import { AiInterface } from "../services/ai";
 import { settingsStore } from "../stores/settings";
 import prompts from "../models/prompts";
-import { of, Subject, take, takeUntil, tap, withLatestFrom, type Observable } from "rxjs";
-
-function get<T>(store: Observable<T>): T {
-  let value = <T>null; 
-  
-  of(0).pipe(
-    withLatestFrom(store),
-    tap(([_, result]) => value = result),
-  ).subscribe();
-  return value;
-}
-
-
 
 export const subscribeSlashCommandsForContext = (guid: string) => {
-  const { activeChatPointId, activeChatPoint, activeChatThread, chatPoints, userPromptInput, 
-    forkChatPoint, addNewChatPoint, getChatPoint, deleteChatPointAndDescendants, 
-    updateChatPoint, subscribeToBus, sendMessage, deriveThread } = getContextualStores(guid);
+  const stores = getContextualStores(guid);
 
   let AI: AiInterface;
   settingsStore.subscribe((settings) => {
     AI = new AiInterface(100, settings.SUMMARY_MODEL || 'gpt-3.5-turbo' );
   });
-
-  
   
   const slashFunctions: Record<string, (c: string[]) => void> = {
     setThread: (args: string[]) => {
       const id = args[0];
-      const cps = get(chatPoints) as ChatPoint[];
+      const cps = get(stores.chatPoints) as ChatPoint[];
       if (cps.find((sp: ChatPoint) => sp.id === id)) {
-        activeChatPointId.set(id);
+        stores.activeChatPointId.set(id);
       }
     },
     fork: (args: string[]) => {
       const [ chatPointId ] = args;
       
-      forkChatPoint(chatPointId);
+      stores.forkChatPoint(chatPointId);
     },
     addSystemPrompt: (args: string[]) => {
       const prompt = args.join(','); // just in case the prompt has commas which would have been used to split
-      const previousId = get(activeChatPointId) || '';
+      const previousId = get(stores.activeChatPointId) || '';
       
-      const cp = addNewChatPoint(prompt, previousId, ChatRole.SYSTEM);
-      activeChatPointId.set(cp.id);
+      const cp = stores.addNewChatPoint(prompt, previousId, ChatRole.SYSTEM);
+      stores.activeChatPointId.set(cp.id);
     },
     deleteNode: (args: string[]) => {
       const idToDelete = args[0];
       if (!idToDelete || idToDelete === 'root') {
         return;
       }
-      const thread = get(activeChatThread) as ChatPoint[];
+      const thread = get(stores.activeChatThread) as ChatPoint[];
       if (!thread) {
         return;
       }
 
       const currentThreadIds = [...thread.map((cp: ChatPoint) => cp.id)].reverse();
-      activeChatPointId.set('');
-      deleteChatPointAndDescendants(idToDelete);
+      stores.activeChatPointId.set('');
+      stores.deleteChatPointAndDescendants(idToDelete);
 
       for (let i = 0; i < currentThreadIds.length; i++) {
-        const cp = getChatPoint(currentThreadIds[i]);
+        const cp = stores.getChatPoint(currentThreadIds[i]);
         if (cp) {
-          activeChatPointId.set(cp.id)
+          stores.activeChatPointId.set(cp.id)
           break;
         }
       }
     },
     refine: (_: string[]) => {
-      const curCP = get(activeChatPoint) as ChatPoint;
+      const curCP = get(stores.activeChatPoint) as ChatPoint;
       const userPrompt = curCP?.completions.find((c:Completion) => c.role === ChatRole.USER)?.content;
       if (!userPrompt) {
         return;
       }
-      activeChatPointId.set(curCP.previousId);
-      setTimeout(() => userPromptInput.set(userPrompt));
+      stores.activeChatPointId.set(curCP.previousId);
+      setTimeout(() => stores.userPromptInput.set(userPrompt));
     },
     summarize: async (args: string[]) => {
       console.log('summarize', args);
-      const cpId = args[0] || get(activeChatPointId) || '';
-      const cp = getChatPoint(cpId);
+      const cpId = args[0] || get(stores.activeChatPointId) || '';
+      const cp = stores.getChatPoint(cpId);
       if (!cp) {
         errorBus.set(`tried to summarize nonexistent ChatPoint with id: ${cpId}`);
         return;
@@ -93,21 +76,21 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       const textToSummarize = chatPointToMarkdown(cp);
       const completions = [{ role: ChatRole.USER, content: prompts.SummaryOfChatPoint({text:textToSummarize}) }];
       const summary = await AI.prompt(completions, 'awaited');
-      updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
+      stores.updateChatPoint(cp.id, (cp: ChatPoint) => ({ ...cp, summary }));
     },
     summarizeThread: async (args: string[]) => {
-      const cpId = args[0] || get(activeChatPointId)!;
-      activeChatPointId.set(cpId);
-      const myCompletions = get(activeChatThread)
+      const cpId = args[0] || get(stores.activeChatPointId)!;
+      stores.activeChatPointId.set(cpId);
+      const myCompletions = get(stores.activeChatThread)
         .flatMap((cp: ChatPoint) => cp.completions);
 
       myCompletions.push({ role: ChatRole.USER, content: prompts.SummaryOfThread() });
       const summary = await AI.prompt([...myCompletions], 'awaited');
-      const cp = addNewChatPoint(summary, cpId, ChatRole.SYSTEM);
-      activeChatPointId.set(cp.id);
+      const cp = stores.addNewChatPoint(summary, cpId, ChatRole.SYSTEM);
+      stores.activeChatPointId.set(cp.id);
     },
     analyzeMyWriting: async (args: string[]) => {
-      const myCompletions = get(chatPoints)
+      const myCompletions = get(stores.chatPoints)
         .flatMap((cp: ChatPoint) => cp.completions)
         .filter((c: Completion) => c.role === ChatRole.USER)
         .map((c: Completion) => c.content.trim())
@@ -116,12 +99,12 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       const prompt = prompts.AnalyzeMyWriting({ text: myCompletions });
       //sendMessage(BusEvent.ChatIntent, { ...Context.Null, referenceId: '0', guid } , { content: prompt});
       const emulationPrompt = await AI.prompt([{ role: ChatRole.USER, content: prompt }], 'awaited');
-      sendMessage(BusEvent.SlashFunction, { ...Context.Null, referenceId: '0', guid } , { content: `/addSystemPrompt(${emulationPrompt})` });
+      stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, referenceId: '0', guid } , { content: `/addSystemPrompt(${emulationPrompt})` });
     },
     move: (args: string[]) => {
       const [id, newPreviousId] = args;
-      updateChatPoint(id, (cp: ChatPoint) => ({ ...cp, previousId: newPreviousId }));
-      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid } , { content: `/setThread(${id})` });
+      stores.updateChatPoint(id, (cp: ChatPoint) => ({ ...cp, previousId: newPreviousId }));
+      stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid } , { content: `/setThread(${id})` });
     }
   }
 
@@ -142,7 +125,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
     },
   };
 
-  subscribeToBus(guid, commands)
+  stores.subscribeToBus(guid, commands)
 }
 
 export function isSlashCommandFormat(input: string): boolean {

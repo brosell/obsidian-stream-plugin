@@ -1,4 +1,3 @@
-import { get } from "svelte/store";
 import { BusEvent, Context, type Message } from "../services/bus";
 import { ChatRole, type ChatPoint, type Completion } from "../models/chat-point";
 import { getContextualStores } from "../stores/contextual-stores";
@@ -14,16 +13,16 @@ export const subscribeForContext = (guid: string) => {
     autoSUmmarize = settings.AUTO_SUMMARIZE;
   });
   
-  const { sendMessage, activeChatPointId, addNewChatPoint, deriveThread, updateChatPoint, subscribeToBus, readyForInput } = getContextualStores(guid);
+  const stores = getContextualStores(guid);
   const handlers = {
     [BusEvent.ChatIntent]: (message: Message) => {
       const { details, context } = message;
-      readyForInput.set(false);
+      stores.readyForInput.set(false);
       // const cp = addNewChatPoint(details.content, context.referenceId || get(activeChatPointId) || '');
-      const cp = addNewChatPoint(details.content, activeChatPointId.getValue() || '');
+      const cp = stores.addNewChatPoint(details.content, stores.activeChatPointId.getValue() || '');
 
-      activeChatPointId.set(cp.id);
-      sendMessage(BusEvent.UserPromptAvailable, { guid, referenceType: 'ChatPoint', referenceId: cp.id }, details.content);
+      stores.activeChatPointId.set(cp.id);
+      stores.sendMessage(BusEvent.UserPromptAvailable, { guid, referenceType: 'ChatPoint', referenceId: cp.id }, details.content);
     },
 
     [BusEvent.UserPromptAvailable]: (message: Message) => {
@@ -31,7 +30,7 @@ export const subscribeForContext = (guid: string) => {
       if (context.referenceType !== 'ChatPoint') {
         return; // not for us
       }
-      const thread = deriveThread(context.referenceId);
+      const thread = stores.deriveThread(context.referenceId);
       const completions = thread.flatMap((cp: ChatPoint) => cp.completions) as Completion[];
       AI.prompt(completions, context);
     },
@@ -41,17 +40,17 @@ export const subscribeForContext = (guid: string) => {
       if (context.referenceType !== 'ChatPoint') {
         return; // not for us
       }
-      const cp = updateChatPoint(context.referenceId, (cp: ChatPoint) => {
+      const cp = stores.updateChatPoint(context.referenceId, (cp: ChatPoint) => {
         return {...cp, completions: [...cp.completions.filter(comp => comp.role != ChatRole.ASSISTANT), { role: ChatRole.ASSISTANT, content: details.content }]};
       });
 
       if (autoSUmmarize) {
-        sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${context.referenceId})`});
+        stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${context.referenceId})`});
       }
 
-      readyForInput.set(true);
-      activeChatPointId.set('');
-      activeChatPointId.set(cp!.id);
+      stores.readyForInput.set(true);
+      stores.activeChatPointId.set('');
+      stores.activeChatPointId.set(cp!.id);
     },
     [BusEvent.AIStreamDelta]: (message: Message) => {
       const { context, details } = message;
@@ -61,15 +60,21 @@ export const subscribeForContext = (guid: string) => {
         // tap((res) => console.log(res)),
         finalize(() => console.log('done')),
         tap(result => {
-          updateChatPoint(context.referenceId, (cp: ChatPoint) => {
-            return {...cp, completions: [...cp.completions.filter(comp => comp.role != ChatRole.ASSISTANT), { role: ChatRole.ASSISTANT, content: result }]};
+          stores.updateChatPoint(context.referenceId, (cp: ChatPoint) => {
+            let comp = cp.completions.find(comp => comp.role == ChatRole.ASSISTANT);
+            if (!comp) {
+              comp = { role: ChatRole.ASSISTANT, content: '' };
+              cp.completions.push(comp);
+            }
+            comp.content = result;
+            return cp;
           });
         })
       ).subscribe();
 
     } 
   }
-  subscribeToBus(guid, handlers);
+  stores.subscribeToBus(guid, handlers);
 }
 
 

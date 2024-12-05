@@ -19,7 +19,8 @@
   export let showCheckbox: boolean = false;
   export let showOpen: boolean = false;
 
-  const {sendMessage, readyForInput, activeChatPointId, streamedCount} = getContextualStores(guid);
+  const stores = getContextualStores(guid);
+  const { readyForInput, activeChatPointId, } = stores;
   
   const spinner = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
   $: spinnerDisplay = spinner[$incrementingStore % spinner.length];
@@ -35,7 +36,7 @@
   }
   let updateChatPoint: (chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint) => ChatPoint;
   $: {
-    updateChatPoint = getContextualStores(guid).updateChatPoint;
+    updateChatPoint = stores.updateChatPoint;
   }
 
   const open = false; //isActive && text.indexOf('SYSTEM') === -1;
@@ -46,16 +47,16 @@
   const menu: Record<string, () => void> = {
     
     "⤴️ Branch": () => {
-      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/setThread(${chatPointId})`});
+      stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/setThread(${chatPointId})`});
     },
     "🔀 Fork": () => {
-      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/fork(${chatPointId})`});
+      stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/fork(${chatPointId})`});
     },
     "📋 Summarize": () => {
-      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${chatPointId})`});
+      stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarize(${chatPointId})`});
     },
     SummarizeThread: () => {
-      sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarizeThread(${chatPointId})`});
+      stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, { content: `/summarizeThread(${chatPointId})`});
     },
   };
 

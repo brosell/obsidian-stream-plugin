@@ -1,8 +1,7 @@
 import { TFile, TextFileView, WorkspaceLeaf } from 'obsidian';
 
 import Component from '../components/PluginRoot.svelte';
-import { getContextualStores } from '../stores/contextual-stores';
-import { get } from 'svelte/store';
+import { get, getContextualStores } from '../stores/contextual-stores';
 import { BusEvent, Context } from '../services/bus';
 
 export const STREAM_VIEW_TYPE = 'stream-view';
@@ -23,8 +22,8 @@ export class StreamView extends TextFileView {
 	setViewData(data: string, clear: boolean): void {
 		console.log("setViewData", this.guid);
 		// console.log(data, clear);
-		const { loadChatPoints } = getContextualStores(this.guid);
-		loadChatPoints(data);
+		const stores = getContextualStores(this.guid);
+		stores.loadChatPoints(data);
 	}
 	clear(): void {
 		console.log("clear Method not implemented.");
@@ -72,9 +71,9 @@ export class StreamView extends TextFileView {
 
 
 (window as any).chat_map_activate = (guid: string, id: string) => {
-	const { sendMessage } = getContextualStores(guid); 
+	const stores = getContextualStores(guid); 
 	console.log(`activate ${id}`);
-	sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, {content: `/setThread(${id})` } );
+	stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, {content: `/setThread(${id})` } );
 }
 
 
