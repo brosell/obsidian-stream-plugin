@@ -76,9 +76,13 @@ export class ContextualStores {
 
     this.selectedChatPoints = this.chatPoints.pipe(map(chatPoints => chatPoints.filter(chatPoint => chatPoint.selected)));
 
-    this.treeDisplay = this.chatPoints.pipe(
+    this.treeDisplay = combineLatest([
+      this.chatPoints,
+      this.activeChatPointId
+    ]).pipe(
+      map(([chatPoints, _id]) => chatPoints),
       map(chatPoints => prepareChatPointsForDisplay(chatPoints, '', (chatPoint: ChatPoint) => chatPointToHtml(chatPoint)))
-    );
+    )
 
     this.chatDisplay = this.activeChatThread.pipe(
       startWith([]),
