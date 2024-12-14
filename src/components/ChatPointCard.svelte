@@ -34,11 +34,7 @@
   $: {
     header = `${chatPointDisplay.id}: ${chatPointDisplay.chatPoint.summary??''}`;
   }
-  let updateChatPoint: (chatPointId: string, updater: (chatPoint: ChatPoint) => ChatPoint) => ChatPoint;
-  $: {
-    updateChatPoint = stores.updateChatPoint;
-  }
-
+ 
   const open = false; //isActive && text.indexOf('SYSTEM') === -1;
   
   
@@ -66,7 +62,7 @@
   const toggleSelected = () => {
     console.log('toggleSelected', selected);
     selected = !selected;
-    updateChatPoint(chatPointDisplay.id, (cp) => ({
+    stores.updateChatPoint(chatPointDisplay.id, (cp) => ({
       ...cp, selected
     }));
   };
