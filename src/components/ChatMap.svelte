@@ -7,9 +7,22 @@
   import YAML from "hexo-front-matter";
 	import { getContextualStores } from '../stores/contextual-stores';
   import type { ChatPointDisplay } from "../services/nested-list-builder";
+    import { distinctUntilChanged, map, tap, throttleTime } from "rxjs";
 
 	export let guid: string;
 	const { findInput, treeDisplay, activeChatThread } = getContextualStores(guid);
+
+  const debouncedTree = treeDisplay.pipe(
+    throttleTime(1000, undefined, { leading: true, trailing: true }),
+    tap(() => console.log('debounced tree', Date.now()))
+  );
+
+  const throttledChatThreadIds = activeChatThread.pipe(
+    map(cps => cps.map(cp => cp.id)),
+    distinctUntilChanged(),
+    tap(() => console.log('throttled active thread ids')),
+    throttleTime(1000, undefined, { leading: true, trailing: true }),
+  )
 
 	function wrapText(text: string, maxLineLength: number) {
 		const words = text.split(/\s+/);
@@ -38,8 +51,8 @@
     return style;
   }
 
-	$: activeNodeIds = $activeChatThread.map(cp => cp.id);
-  $: value = $treeDisplay.reduce((md, item ) => {
+	$: activeNodeIds = $throttledChatThreadIds;
+  $: value = $debouncedTree.reduce((md, item ) => {
 		return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} ${item.chatPoint.selected ? '<span style="font-size:20px; color:white; background-color:black;"> &#x1F31F; </span></p>' : ''} - <span title="${(item.chatPoint.summary || '').replaceAll('"', '')}" style="${getStyle(item)}" onclick="chat_map_activate('${guid}','${item.id}')">${wrapText((item.chatPoint.summary || ''), 30) || 'no summary'}</span>\n`;
 	}, "\n");
 
