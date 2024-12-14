@@ -7,10 +7,10 @@
   import YAML from "hexo-front-matter";
 	import { getContextualStores } from '../stores/contextual-stores';
   import type { ChatPointDisplay } from "../services/nested-list-builder";
-  import { merge, skip, debounceTime, map, take, tap, withLatestFrom } from "rxjs";
+  import { merge, skip, debounceTime, map, take, tap, combineLatest } from "rxjs";
 
 	export let guid: string;
-	const { findInput, treeDisplay, activeChatThread } = getContextualStores(guid);
+	const { findInput, treeDisplay, activeChatThread, activeChatPointId } = getContextualStores(guid);
 
   const debouncedTree = merge( 
     treeDisplay.pipe(take(1)),
@@ -60,8 +60,11 @@
     return style;
   }
 
-  const value = debouncedTree.pipe(
-    withLatestFrom(throttledChatThreadIds),
+  const value = combineLatest([
+    debouncedTree,
+    throttledChatThreadIds,
+    activeChatPointId,
+  ]).pipe(
     map(([tree, activeIds]) => tree.reduce((md, item ) => {
       return md + `${' '.repeat(item.depth * 2)}- id: ${item.id} ${
         item.chatPoint.selected ? '<span style="font-size:20px; color:white; background-color:black;"> &#x1F31F; </span></p>' : ''
