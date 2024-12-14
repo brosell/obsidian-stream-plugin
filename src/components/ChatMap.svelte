@@ -7,21 +7,30 @@
   import YAML from "hexo-front-matter";
 	import { getContextualStores } from '../stores/contextual-stores';
   import type { ChatPointDisplay } from "../services/nested-list-builder";
-    import { distinctUntilChanged, map, tap, throttleTime } from "rxjs";
+  import { merge, skip, debounceTime, map, take, tap } from "rxjs";
 
 	export let guid: string;
 	const { findInput, treeDisplay, activeChatThread } = getContextualStores(guid);
 
-  const debouncedTree = treeDisplay.pipe(
-    throttleTime(1000, undefined, { leading: true, trailing: true }),
+  const debouncedTree = merge( 
+    treeDisplay.pipe(take(1)),
+    treeDisplay.pipe(
+      skip(1),
+      debounceTime(250),
+    )
+  ).pipe(
     tap(() => console.log('debounced tree', Date.now()))
-  );
+  )
 
-  const throttledChatThreadIds = activeChatThread.pipe(
+  const throttledChatThreadIds = merge( 
+    activeChatThread.pipe(take(1)),
+    activeChatThread.pipe(
+      skip(1),
+      debounceTime(250),
+    )
+  ).pipe(
     map(cps => cps.map(cp => cp.id)),
-    distinctUntilChanged(),
-    tap(() => console.log('throttled active thread ids')),
-    throttleTime(1000, undefined, { leading: true, trailing: true }),
+    tap(() => console.log('debounced active thread ids', Date.now())),
   )
 
 	function wrapText(text: string, maxLineLength: number) {
