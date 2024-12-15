@@ -10,6 +10,7 @@
   import { merge, skip, debounceTime, map, take, tap, combineLatest } from "rxjs";
 
 	export let guid: string;
+  
 	const { findInput, treeDisplay, activeChatThread, activeChatPointId } = getContextualStores(guid);
 
   const debouncedTree = merge( 
@@ -113,7 +114,7 @@
     mindmap.innerHTML = "";
 
 		setTimeout(() => {
-			Markmap.create("#markmap", options, root);
+			Markmap.create(`#markmap-${guid}`, options, root);
 			linkSVG = makeTextFile(createSVG(mindmap));
 		});
   });
@@ -149,14 +150,15 @@
   style="max-height: 33%;" 
 />
   <svg
-    id="markmap"
+    id="markmap-{guid}"
+    class="markmap"
     bind:this={mindmap}
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"
   ></svg>
 
 <style>
-	#markmap {
+	.markmap {
 		width: 100%;
 		height: 100%;
 	}
