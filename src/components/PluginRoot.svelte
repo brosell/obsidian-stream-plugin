@@ -53,7 +53,7 @@
     console.log('nada', event);
   }
 
-  let isTreeViewVisible = true;
+  let isTreeViewVisible = false;
   
   function toggleTreeView() {
     isTreeViewVisible = !isTreeViewVisible;
