@@ -1,7 +1,7 @@
 import { TFile, TextFileView, WorkspaceLeaf } from 'obsidian';
 
 import Component from '../components/PluginRoot.svelte';
-import { get, getContextualStores } from '../stores/contextual-stores';
+import { ContextualStores, get, getContextualStores, makeUid } from '../stores/contextual-stores';
 import { BusEvent, Context } from '../services/bus';
 
 export const STREAM_VIEW_TYPE = 'stream-view';
@@ -11,7 +11,7 @@ export class StreamView extends TextFileView {
 	constructor(leaf: WorkspaceLeaf) {
 		console.log('constructing view');
 		super(leaf);
-		this.guid = Math.random().toString(36).substring(2);
+		this.guid = makeUid();
 	}
 
 	getViewData(): string {
@@ -22,7 +22,7 @@ export class StreamView extends TextFileView {
 	setViewData(data: string, clear: boolean): void {
 		console.log("setViewData", this.guid);
 		// console.log(data, clear);
-		const stores = getContextualStores(this.guid);
+		const stores: ContextualStores = getContextualStores(this.guid);
 		stores.loadChatPoints(data);
 	}
 	clear(): void {

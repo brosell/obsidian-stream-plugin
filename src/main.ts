@@ -1,7 +1,8 @@
-import { App, MarkdownView, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from "obsidian";
+import { App, MarkdownView, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf, type MarkdownPostProcessorContext } from "obsidian";
 import { StreamView, STREAM_VIEW_TYPE } from "./views/StreamView";
 import "virtual:uno.css";
 import { settingsStore } from "./stores/settings";
+import { getContextualStores, makeUid } from "./stores/contextual-stores";
 
 export interface StreamSettings {
 	API_KEY: string;
@@ -60,6 +61,36 @@ export default class ObsidianStream extends Plugin {
 		});
 
 		settingsStore.set(this.settings);
+
+		this.registerMarkdownCodeBlockProcessor('stream', async (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+			console.log('source', source);
+			console.log('ctx', ctx);
+			
+			const details = source.split('\n')
+			                      .map(r => r.trim())
+														.reduce((record, row) => {
+															const [attr, value] = row.split(':').map(r => r.trim());
+															return { ...record, [attr]: value}
+														}, {} as Record<string, string>);
+
+			// el.createEl('code').innerText = JSON.stringify(details, null, 2);
+			console.log('details', details);
+			
+			const notes = await this.app.vault.getFiles()
+			console.log('notes', notes);
+			const note = notes.find(n => n.basename == details.file);
+			if (note) {
+				const noteString = await this.app.vault.cachedRead(note);
+				console.log('note string len', noteString.length)
+				const uid = makeUid();
+				const stores = getContextualStores(uid);
+				
+				stores.loadChatPoints(noteString);
+				const cp = stores.getChatPoint(details.chatId);
+				el.createSpan().innerText = cp?.summary ?? 'no summary';
+			}
+    });
+
 	}
 
 	handleFileOpen = async (file: TFile | null): Promise<void> => {

@@ -233,3 +233,5 @@ export const getContextualStores = (guid: string): ContextualStores => {
   }
   return storeInstances.get(guid)!;
 };
+
+export const makeUid = (): string => Math.random().toString(36).substring(2);
