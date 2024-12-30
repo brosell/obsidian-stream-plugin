@@ -3,6 +3,7 @@ import { StreamView, STREAM_VIEW_TYPE } from "./views/StreamView";
 import "virtual:uno.css";
 import { settingsStore } from "./stores/settings";
 import { getContextualStores, makeUid } from "./stores/contextual-stores";
+import ChatSummary from "./components/code-block-post-processors/ChatSummary.svelte";
 
 export interface StreamSettings {
 	API_KEY: string;
@@ -73,21 +74,21 @@ export default class ObsidianStream extends Plugin {
 															return { ...record, [attr]: value}
 														}, {} as Record<string, string>);
 
-			// el.createEl('code').innerText = JSON.stringify(details, null, 2);
-			console.log('details', details);
-			
 			const notes = await this.app.vault.getFiles()
 			console.log('notes', notes);
 			const note = notes.find(n => n.basename == details.file);
-			if (note) {
-				const noteString = await this.app.vault.cachedRead(note);
-				console.log('note string len', noteString.length)
+			if (note && details) {
 				const uid = makeUid();
-				const stores = getContextualStores(uid);
 				
-				stores.loadChatPoints(noteString);
-				const cp = stores.getChatPoint(details.chatId);
-				el.createSpan().innerText = cp?.summary ?? 'no summary';
+				// hokey way of bootstrapping the store with an App instance...
+				getContextualStores(uid, this.app);
+
+				const opts = {
+					target: el,
+					props: {details, note, storeGuid: uid}
+				};
+
+				const cs = new ChatSummary(opts as unknown as any)
 			}
     });
 

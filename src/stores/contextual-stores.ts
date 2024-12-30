@@ -6,6 +6,17 @@ import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
 import { BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, Subject, tap, withLatestFrom } from 'rxjs';
+import type { App, TFile, Vault } from 'obsidian';
+
+export interface IObsidian {
+  vault: Vault | null;
+}
+
+const nullObsidian: IObsidian = {
+  vault: {
+    cachedRead: async (file: TFile) => ''
+  } as Vault
+}
 
 export class SvelteBehaviorSubject<T> extends BehaviorSubject<T> {
   set(value: T) {
@@ -32,6 +43,7 @@ export function get<T>(store: Observable<T>): T {
 const storeInstances: Map<string, ContextualStores> = new Map();
 
 export class ContextualStores {
+  obsidian: BehaviorSubject<IObsidian> = new BehaviorSubject(nullObsidian);
   bus: SvelteSubject<Message>;
   chatPoints: SvelteBehaviorSubject<ChatPoint[]>;
   activeChatPointId: SvelteBehaviorSubject<string | null>;
@@ -54,7 +66,10 @@ export class ContextualStores {
   private frontMatter: string = '';
   private searchSubject: SvelteSubject<string>;
 
-  constructor(guid: string) {
+  constructor(guid: string, app?: IObsidian) {
+    if (app) {
+      this.obsidian.next(app);
+    }
     this.bus = new SvelteBehaviorSubject<Message>(NoopMessage);
     this.chatPoints = new SvelteBehaviorSubject<ChatPoint[]>([]);
     this.activeChatPointId = new SvelteBehaviorSubject<string | null>(null);
@@ -227,9 +242,9 @@ export class ContextualStores {
 }
 
 // Usage
-export const getContextualStores = (guid: string): ContextualStores => {
+export const getContextualStores = (guid: string, app?: IObsidian): ContextualStores => {
   if (!storeInstances.has(guid)) {
-    storeInstances.set(guid, new ContextualStores(guid));
+    storeInstances.set(guid, new ContextualStores(guid, app));
   }
   return storeInstances.get(guid)!;
 };
