@@ -88,7 +88,7 @@ export class ContextualStores {
 
     this.chatDisplay = this.activeChatThread.pipe(
       startWith([]),
-      tap((result) => console.log('chatDisplay', result)),
+      // tap((result) => console.log('chatDisplay', result)),
       map(chatPoints => prepareChatPointsForDisplay(chatPoints, '', (chatPoint: ChatPoint) => chatPointToHtml(chatPoint)))
     );
 
@@ -141,7 +141,6 @@ export class ContextualStores {
         fetch: safeFetch as any
       })
       this.aiModel = new AiModel(aiApi, model);
-      console.log('aiModel in use');
     } else {
       settingsStore.subscribe((settings) => {
         const aiApi = new OpenAI({
@@ -149,7 +148,6 @@ export class ContextualStores {
           dangerouslyAllowBrowser: true
         });
         this.aiModel = new AiModel(aiApi, settings.MODEL);
-        console.log('def aiModel in use');
       })
     }
   }

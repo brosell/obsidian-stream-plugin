@@ -20,7 +20,7 @@
       debounceTime(250),
     )
   ).pipe(
-    tap(() => console.log('debounced tree', Date.now()))
+    // tap(() => console.log('debounced tree', Date.now()))
   )
 
   const throttledChatThreadIds = merge( 
@@ -31,7 +31,7 @@
     )
   ).pipe(
     map(cps => cps.map(cp => cp.id)),
-    tap(() => console.log('debounced active thread ids', Date.now())),
+    // tap(() => console.log('debounced active thread ids', Date.now())),
   )
 
 	function wrapText(text: string, maxLineLength: number) {
@@ -95,7 +95,7 @@
   ) || '# nada';
 
   afterUpdate(() => {
-		console.log("afterUpdate");
+		// console.log("afterUpdate");
     const transformer = new Transformer();
 
     const { root, features } = transformer.transform(markdown);

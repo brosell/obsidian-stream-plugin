@@ -41,7 +41,7 @@ export default class ObsidianStream extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('file-open', this.handleFileOpen));
 
-		this.registerEvent(this.app.workspace.on('active-leaf-change', (l) => { console.log('leaf change', l)}));
+		// this.registerEvent(this.app.workspace.on('active-leaf-change', (l) => { console.log('leaf change', l)}));
 
 		(window as any).toggleMyPluginView = this.toggleView.bind(this);
 		this.addCommand({
@@ -63,7 +63,7 @@ export default class ObsidianStream extends Plugin {
 	}
 
 	handleFileOpen = async (file: TFile | null): Promise<void> => {
-		console.log('handle file open', file);
+		// console.log('handle file open', file);
 		if (!file) return;
 		const fileContent = await this.app.vault.read(file);
 		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
@@ -76,7 +76,7 @@ export default class ObsidianStream extends Plugin {
 	
 
 	openCustomView(file: TFile) {
-		console.log('opening custom view');
+		// console.log('opening custom view');
 		let leaf = this.app.workspace.getLeaf(false);
 		if (leaf.view.getViewType() !== STREAM_VIEW_TYPE) {
 				leaf.setViewState({
@@ -113,7 +113,7 @@ export default class ObsidianStream extends Plugin {
 
 
 	onunload() {
-		console.log("unloading plugin");
+		// console.log("unloading plugin");
 		delete (window as any).toggleMyPluginView;
 	}
 
