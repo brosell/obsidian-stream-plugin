@@ -38,6 +38,9 @@ export class StreamView extends TextFileView {
 		this.file = file;
 		console.log('file', file)
 		// Perform any additional setup required for displaying the file
+		const stores = getContextualStores(this.guid);
+		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter || {};
+		stores.setModelOpts(frontmatter);
 	}
 
 	getViewType() {

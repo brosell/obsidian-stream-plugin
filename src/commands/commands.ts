@@ -32,7 +32,7 @@ export const subscribeForContext = (guid: string) => {
       }
       const thread = stores.deriveThread(context.referenceId);
       const completions = thread.flatMap((cp: ChatPoint) => cp.completions) as Completion[];
-      AI.prompt(completions, context);
+      stores.prompt(completions, context);
     },
 
     [BusEvent.AIResponseAvailable]: (message: Message) => {
