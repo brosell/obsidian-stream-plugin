@@ -48,10 +48,6 @@
     window.removeEventListener('mousemove', startResizing);
     window.removeEventListener('mouseup', stopResizing);
   }
-  
-  function nada(event: any) {
-    console.log('nada', event);
-  }
 
   let isTreeViewVisible = false;
   

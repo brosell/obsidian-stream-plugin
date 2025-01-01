@@ -60,7 +60,7 @@
 
   let selected: boolean = false;
   const toggleSelected = () => {
-    console.log('toggleSelected', selected);
+    // console.log('toggleSelected', selected);
     selected = !selected;
     stores.updateChatPoint(chatPointDisplay.id, (cp) => ({
       ...cp, selected
@@ -75,7 +75,7 @@
 	let value: any = null;
   $: {
     if (value) {
-      console.log(value);
+      // console.log(value);
       menu[value.value]();
       value = null;
     }

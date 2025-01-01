@@ -32,7 +32,7 @@ export const subscribeForContext = (guid: string) => {
       }
       const thread = stores.deriveThread(context.referenceId);
       const completions = thread.flatMap((cp: ChatPoint) => cp.completions) as Completion[];
-      AI.prompt(completions, context);
+      stores.prompt(completions, context);
     },
 
     [BusEvent.AIResponseAvailable]: (message: Message) => {
@@ -58,7 +58,7 @@ export const subscribeForContext = (guid: string) => {
       stream.pipe(
         scan((acc, value) => acc + value),
         // tap((res) => console.log(res)),
-        finalize(() => console.log('done')),
+        // finalize(() => console.log('done')),
         tap(result => {
           stores.updateChatPoint(context.referenceId, (cp: ChatPoint) => {
             let comp = cp.completions.find(comp => comp.role == ChatRole.ASSISTANT);

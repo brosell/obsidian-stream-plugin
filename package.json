@@ -32,6 +32,7 @@
     "vite": "^4.5.0"
   },
   "dependencies": {
+    "@barosell/streamllm": "^0.1.0",
     "hexo-front-matter": "^4.2.1",
     "marked": "^10.0.0",
     "markmap-lib": "^0.15.5",

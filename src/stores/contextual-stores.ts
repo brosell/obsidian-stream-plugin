@@ -1,11 +1,16 @@
 import { writable, get as svGet, type Writable } from 'svelte/store';
 import { ChatRole, chatPointToHtml, type ChatPoint } from '../models/chat-point';
 import { prepareChatPointsForDisplay, type ChatPointDisplay } from '../services/nested-list-builder';
-import { NoopMessage, type BusEvent, type Message, type MessageContext, errorBus } from '../services/bus';
+import { BusEvent, NoopMessage, type Message, type MessageContext, errorBus } from '../services/bus';
 import { marked } from 'marked';
 import { subscribeForContext } from '../commands/commands';
 import { subscribeSlashCommandsForContext } from '../commands/slash-functions';
-import { BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, Subject, tap, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, of, reduce, startWith, Subject, tap, withLatestFrom } from 'rxjs';
+import type { FrontMatterCache } from 'obsidian';
+import { AiModel, type Completion } from '@barosell/streamllm';
+import OpenAI from 'openai';
+import { settingsStore } from './settings';
+import { safeFetch } from '../services/fetch';
 
 export class SvelteBehaviorSubject<T> extends BehaviorSubject<T> {
   set(value: T) {
@@ -32,6 +37,7 @@ export function get<T>(store: Observable<T>): T {
 const storeInstances: Map<string, ContextualStores> = new Map();
 
 export class ContextualStores {
+  aiModel: AiModel | undefined;
   bus: SvelteSubject<Message>;
   chatPoints: SvelteBehaviorSubject<ChatPoint[]>;
   activeChatPointId: SvelteBehaviorSubject<string | null>;
@@ -82,7 +88,7 @@ export class ContextualStores {
 
     this.chatDisplay = this.activeChatThread.pipe(
       startWith([]),
-      tap((result) => console.log('chatDisplay', result)),
+      // tap((result) => console.log('chatDisplay', result)),
       map(chatPoints => prepareChatPointsForDisplay(chatPoints, '', (chatPoint: ChatPoint) => chatPointToHtml(chatPoint)))
     );
 
@@ -123,7 +129,41 @@ export class ContextualStores {
     });
   }
 
-  // Define all the methods implementing ContextualStores here
+  setModelOpts(frontmatter: FrontMatterCache): void {
+    const { model, baseUrl, apiKey } = frontmatter;
+    console.log('frontmatter',  frontmatter );
+
+    if (!!model && !!baseUrl) {
+      const aiApi = new OpenAI({
+        baseURL: baseUrl,
+        apiKey: apiKey || 'ollama',
+        dangerouslyAllowBrowser: true,
+        fetch: safeFetch as any
+      })
+      this.aiModel = new AiModel(aiApi, model);
+    } else {
+      settingsStore.subscribe((settings) => {
+        const aiApi = new OpenAI({
+          apiKey: settings.API_KEY,
+          dangerouslyAllowBrowser: true
+        });
+        this.aiModel = new AiModel(aiApi, settings.MODEL);
+      })
+    }
+  }
+  
+  prompt(completions: Completion[], context: MessageContext) {
+    if (this.aiModel) {
+      const deltas = this.aiModel.stream(completions);
+
+      this.sendMessage(BusEvent.AIStreamDelta, context, { stream: deltas });
+      
+      deltas.pipe(
+        reduce((content, delta) => content + delta, ''),
+        tap(content => this.sendMessage(BusEvent.AIResponseAvailable, context, { content }))
+      ).subscribe();
+    }
+  }
 
   loadChatPoints(loadData: string): void {
     let parsedData = { chatPoints: [{previousId: '', id: '0', completions: [{ role: ChatRole.SYSTEM, content: 'You are a Helpful assistant for coding and other tasks' } ]}], activeChatPointId: "0" };

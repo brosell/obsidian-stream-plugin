@@ -65,7 +65,7 @@ export const subscribeSlashCommandsForContext = (guid: string) => {
       setTimeout(() => stores.userPromptInput.set(userPrompt));
     },
     summarize: async (args: string[]) => {
-      console.log('summarize', args);
+      // console.log('summarize', args);
       const cpId = args[0] || get(stores.activeChatPointId) || '';
       const cp = stores.getChatPoint(cpId);
       if (!cp) {

@@ -9,19 +9,17 @@ export const STREAM_VIEW_TYPE = 'stream-view';
 export class StreamView extends TextFileView {
 	
 	constructor(leaf: WorkspaceLeaf) {
-		console.log('constructing view');
+		// console.log('constructing view');
 		super(leaf);
 		this.guid = Math.random().toString(36).substring(2);
 	}
 
 	getViewData(): string {
-		console.log(`getViewData ${this.guid}`);
+		// console.log(`getViewData ${this.guid}`);
 		const { saveData } = getContextualStores(this.guid);
 		return get(saveData);
 	}
 	setViewData(data: string, clear: boolean): void {
-		console.log("setViewData", this.guid);
-		// console.log(data, clear);
 		const stores = getContextualStores(this.guid);
 		stores.loadChatPoints(data);
 	}
@@ -36,7 +34,7 @@ export class StreamView extends TextFileView {
 
 	setFile(file: TFile) {
 		this.file = file;
-		console.log('file', file)
+		// console.log('file', file)
 		// Perform any additional setup required for displaying the file
 	}
 
@@ -50,7 +48,7 @@ export class StreamView extends TextFileView {
 	}
 
 	async onOpen() {
-		console.log('onOpen');
+		// console.log('onOpen');
 		this.component = new Component({
 			target: this.contentEl,
 			props: { guid: this.guid, viewParent: this },
@@ -64,7 +62,10 @@ export class StreamView extends TextFileView {
 	}
 
 	async onLoadFile (file: TFile) {
-		console.log('onLoadFile', file);
+		// console.log('onLoadFile', file);
+		const stores = getContextualStores(this.guid);
+		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter || {};
+		stores.setModelOpts(frontmatter);
 		return await super.onLoadFile(file);
 	}
 }
@@ -72,7 +73,7 @@ export class StreamView extends TextFileView {
 
 (window as any).chat_map_activate = (guid: string, id: string) => {
 	const stores = getContextualStores(guid); 
-	console.log(`activate ${id}`);
+	// console.log(`activate ${id}`);
 	stores.sendMessage(BusEvent.SlashFunction, { ...Context.Null, guid }, {content: `/setThread(${id})` } );
 }
 
