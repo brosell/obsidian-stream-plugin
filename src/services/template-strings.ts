@@ -1,4 +1,4 @@
-import { template } from "markmap-lib";
+// import { template } from "markmap-lib"; // Not exported in latest version
 
 export const tStringConstructor = <T extends Record<string, any>>(template: string) => {
   return (params: T) => constructTemplateString(template, params);
