@@ -194,6 +194,12 @@ export class ContextualStores {
     return thread;
   }
 
+  reorderChatPoints(newOrderIds: string[]): void {
+    const points = this.chatPoints.getValue();
+    const reordered = newOrderIds.map(id => points.find(cp => cp.id === id)).filter(Boolean) as ChatPoint[];
+    this.chatPoints.next(reordered);
+  }
+
   deleteChatPointAndDescendants(idToDelete: string): void {
     const existingChatPoints = this.chatPoints.getValue();
 

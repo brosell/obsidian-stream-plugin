@@ -4,6 +4,7 @@
   import { Transformer } from "markmap-lib";
   import * as markmap from "markmap-view";
   import { afterUpdate } from "svelte";
+import { dndzone } from "svelte-dnd-action";
   import YAML from "hexo-front-matter";
 	import { getContextualStores } from '../stores/contextual-stores';
   import type { ChatPointDisplay } from "../services/nested-list-builder";
@@ -77,6 +78,13 @@
 
   let mindmap: SVGSVGElement;
   let linkSVG: any;
+
+// drag-and-drop items
+let dndItems: Array<{ id: string; item: any }> = [];
+const unsubscribeTree = treeDisplay.subscribe(items => { dndItems = items.map(item => ({ id: item.id, item })); });
+function handleDndFinalize(e: CustomEvent) {
+  console.log('Reordered items:', e.detail.items);
+}
   
   function replaceMarkdown(md: string) {
     md = md.replace(
@@ -149,14 +157,15 @@
   bind:value={$findInput}
   style="max-height: 33%;" 
 />
-  <svg
-    id="markmap-{guid}"
-    class="markmap"
-    bind:this={mindmap}
-    xmlns="http://www.w3.org/2000/svg"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-  ></svg>
-
+<div use:dndzone={{ items: dndItems, flipDurationMs: 250 }} on:finalize={handleDndFinalize}>
+    <svg
+      id="markmap-{guid}"
+      class="markmap"
+      bind:this={mindmap}
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+    ></svg>
+  </div>
 <style>
 	.markmap {
 		width: 100%;
